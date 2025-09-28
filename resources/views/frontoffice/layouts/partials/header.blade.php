@@ -43,7 +43,7 @@
                         <li><a class="text-dark hover:text-primary font-heading font-medium {{ request()->routeIs('book') ? 'active' : '' }}"
                                 href="{{ route('book') }}">Book</a></li>
                         <li><a class="text-dark hover:text-primary font-heading font-medium {{ request()->routeIs('notes') ? 'active' : '' }}"
-                                href="{{ route('notes') }}">Notes</a></li>
+                                href="{{ url('/journals') }}">Journal</a></li>
                         <li><a class="text-dark hover:text-primary font-heading font-medium {{ request()->routeIs('groups') ? 'active' : '' }}"
                                 href="{{ route('groups') }}">Groups</a></li>
                         <li><a class="text-dark hover:text-primary font-heading font-medium {{ request()->routeIs('marketplace') ? 'active' : '' }}"
@@ -71,110 +71,13 @@
                         </svg>
                     </a>
 
-                    <!-- Wishlist Dropdown -->
-                    <div class="relative group">
-                        <a href="#" class="text-dark hover:text-primary flex items-center">
-                            <svg class="w-5 h-5">
-                                <use xlink:href="#heart"></use>
-                            </svg>
-                            <span class="text-xs ml-1">(2)</span>
-                        </a>
-                        <div
-                            class="absolute right-0 w-72 bg-white shadow-lg rounded-md p-4 z-50 hidden group-hover:block">
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="text-primary font-medium">Your wishlist</span>
-                                <span class="bg-primary text-white text-xs px-2 py-1 rounded-full">2</span>
-                            </div>
-                            <ul class="space-y-4 mb-4">
-                                <li class="flex justify-between">
-                                    <div>
-                                        <h5 class="font-medium"><a href="#" class="hover:text-primary">The Emerald
-                                                Crown</a></h5>
-                                        <p class="text-xs text-gray-500">Special discounted price.</p>
-                                        <a href="#"
-                                            class="text-sm font-medium text-primary hover:underline block mt-1">Add to
-                                            cart</a>
-                                    </div>
-                                    <span class="text-primary">$2000</span>
-                                </li>
-                                <li class="flex justify-between">
-                                    <div>
-                                        <h5 class="font-medium"><a href="#" class="hover:text-primary">The Last
-                                                Enchantment</a></h5>
-                                        <p class="text-xs text-gray-500">Perfect for enlightened people.</p>
-                                        <a href="#"
-                                            class="text-sm font-medium text-primary hover:underline block mt-1">Add to
-                                            cart</a>
-                                    </div>
-                                    <span class="text-primary">$400</span>
-                                </li>
-                                <li class="flex justify-between border-t pt-2">
-                                    <span class="font-bold">Total (USD)</span>
-                                    <strong>$2400</strong>
-                                </li>
-                            </ul>
-                            <div class="space-y-2">
-                                <a href="#"
-                                    class="block w-full bg-dark text-white py-2 text-center rounded hover:bg-opacity-90">Add
-                                    all to cart</a>
-                                <a href="#"
-                                    class="block w-full bg-primary text-white py-2 text-center rounded hover:bg-opacity-90">View
-                                    cart</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Cart Dropdown -->
-                    <div class="relative group">
-                        <a href="#" class="text-dark hover:text-primary flex items-center">
-                            <svg class="w-5 h-5">
-                                <use xlink:href="#cart"></use>
-                            </svg>
-                            <span class="text-xs ml-1">(2)</span>
-                        </a>
-                        <div
-                            class="absolute right-0 w-72 bg-white shadow-lg rounded-md p-4 z-50 hidden group-hover:block">
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="text-primary font-medium">Your cart</span>
-                                <span class="bg-primary text-white text-xs px-2 py-1 rounded-full">2</span>
-                            </div>
-                            <ul class="space-y-4 mb-4">
-                                <li class="flex justify-between">
-                                    <div class="flex">
-                                        <img src="{{ asset('template/images/cart-item1.png') }}" alt="cart item"
-                                            class="w-12 h-12 mr-3">
-                                        <div>
-                                            <h5 class="font-medium text-sm">Simple way of piece life</h5>
-                                            <p class="text-xs text-gray-500">Qty: 2</p>
-                                        </div>
-                                    </div>
-                                    <span class="text-primary">$40</span>
-                                </li>
-                                <li class="flex justify-between">
-                                    <div class="flex">
-                                        <img src="{{ asset('template/images/cart-item2.png') }}" alt="cart item"
-                                            class="w-12 h-12 mr-3">
-                                        <div>
-                                            <h5 class="font-medium text-sm">Great travel at desert</h5>
-                                            <p class="text-xs text-gray-500">Qty: 1</p>
-                                        </div>
-                                    </div>
-                                    <span class="text-primary">$40</span>
-                                </li>
-                                <li class="flex justify-between border-t pt-2">
-                                    <span class="font-bold">Total (USD)</span>
-                                    <strong>$80</strong>
-                                </li>
-                            </ul>
-                            <div class="space-y-2">
-                                <a href="#"
-                                    class="block w-full bg-dark text-white py-2 text-center rounded hover:bg-opacity-90">View
-                                    cart</a>
-                                <a href="#"
-                                    class="block w-full bg-primary text-white py-2 text-center rounded hover:bg-opacity-90">Checkout</a>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Sign Out Button (visible if authenticated) -->
+                    @auth
+                        <form method="POST" action="{{ url('/logout') }}">
+                            @csrf
+                            <button type="submit" class="text-dark hover:text-primary font-heading font-medium px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 transition">Sign Out</button>
+                        </form>
+                    @endauth
                 </div>
             </div>
 

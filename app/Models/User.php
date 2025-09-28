@@ -21,7 +21,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
+
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_user')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -44,5 +52,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function journals()
+    {
+    return $this->hasMany(Journal::class);
+    }
+
+    public function notes()
+    {
+    return $this->hasMany(Note::class);
     }
 }

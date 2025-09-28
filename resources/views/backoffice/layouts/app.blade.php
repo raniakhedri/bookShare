@@ -77,7 +77,7 @@
 
   @if(session()->has('success'))
     <div x-data="{ show: true}" x-init="setTimeout(() => show = false, 4000)" x-show="show"
-      class="position-fixed bg-success rounded right-3 text-sm py-2 px-4">
+      style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; min-width: 250px;" class="bg-success text-white rounded shadow text-sm py-2 px-4 animate__animated animate__fadeInUp">
       <p class="m-0">{{ session('success')}}</p>
     </div>
   @endif
