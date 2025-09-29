@@ -45,4 +45,21 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+<<<<<<< Updated upstream
+=======
+
+    public function journals()
+    {
+    return $this->hasMany(Journal::class);
+    }
+
+    public function notes()
+    {
+    return $this->hasMany(Note::class);
+    }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+>>>>>>> Stashed changes
 }
