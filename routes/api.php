@@ -57,3 +57,20 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::patch('users/{user}/toggle-status', [AdminUserController::class, 'toggleStatus']);
 
 });
+// API routes for reviews and interactions
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Review API routes
+    Route::apiResource('reviews', ReviewController::class);
+    Route::get('books/{book}/reviews', [ReviewController::class, 'bookReviews']);
+    Route::get('my-reviews', [ReviewController::class, 'myReviews']);
+    
+    // Interaction API routes
+    Route::post('reviews/{review}/interactions', [ReviewInteractionController::class, 'store']);
+    Route::put('interactions/{interaction}', [ReviewInteractionController::class, 'update']);
+    Route::delete('interactions/{interaction}', [ReviewInteractionController::class, 'destroy']);
+    Route::get('reviews/{review}/discussions', [ReviewInteractionController::class, 'discussions']);
+    Route::get('reviews/{review}/vote-stats', [ReviewInteractionController::class, 'voteStats']);
+    Route::post('interactions/{interaction}/report', [ReviewInteractionController::class, 'report']);
+    Route::get('my-interactions', [ReviewInteractionController::class, 'myInteractions']);
+    Route::get('my-bookmarks', [ReviewInteractionController::class, 'bookmarks']);
+});

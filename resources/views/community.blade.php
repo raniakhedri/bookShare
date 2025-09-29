@@ -1,4 +1,4 @@
-@extends('frontoffice.layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Community Features - Bookly')
 
@@ -62,7 +62,7 @@
                         
                         <div class="flex items-center justify-between text-xs text-gray-500">
                             <div class="flex items-center space-x-3">
-                                <span>by {{ $review->user?->name ?? 'Anonymous' }}</span>
+                                <span>by {{ $review->user->name }}</span>
                                 <span>{{ $review->created_at->diffForHumans() }}</span>
                             </div>
                             <div class="flex items-center space-x-3">

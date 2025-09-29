@@ -205,6 +205,12 @@ Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
 Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
 
 
+// Reviews Routes
+use App\Http\Controllers\Frontoffice\ReviewController;
+Route::resource('reviews', ReviewController::class);
+Route::get('/books/{book}/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
+Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+
 Route::get('/blog', function () {
 	return view('frontoffice.blog');
 })->name('blog');
@@ -446,4 +452,29 @@ Route::group(['prefix' => 'admin', 'middleware' => 'guest'], function () {
 	Route::get('/reset-password/{token}', [ResetController::class, 'resetPass'])->name('password.reset');
 	Route::post('/reset-password', [ChangePasswordController::class, 'changePassword'])->name('password.update');
 });
+// Public routes - Anyone can view
+Route::get('/books/{book}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+Route::get('/reviews/{review}', [ReviewController::class, 'show'])->name('reviews.show');
+Route::get('/reviews/{review}/vote-stats', [ReviewInteractionController::class, 'voteStats'])->name('interactions.vote-stats');
 
+// Protected routes - Require authentication
+Route::middleware('auth')->group(function () {
+    // Review management
+    Route::get('/books/{book}/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
+    Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
+    Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::get('/my-reviews', [ReviewController::class, 'myReviews'])->name('reviews.my-reviews');
+    
+    // Interaction management - GET routes first
+    Route::get('/reviews/{review}/discussions', [ReviewInteractionController::class, 'discussions'])->name('interactions.discussions');
+    Route::get('/my-interactions', [ReviewInteractionController::class, 'myInteractions'])->name('interactions.my-interactions');
+    Route::get('/my-bookmarks', [ReviewInteractionController::class, 'bookmarks'])->name('interactions.bookmarks');
+    
+    // Interaction CRUD - POST/PUT/DELETE routes
+    Route::post('/reviews/{review}/interactions', [ReviewInteractionController::class, 'store'])->name('interactions.store');
+    Route::put('/interactions/{interaction}', [ReviewInteractionController::class, 'update'])->name('interactions.update');
+    Route::delete('/interactions/{interaction}', [ReviewInteractionController::class, 'destroy'])->name('interactions.destroy');
+    Route::post('/interactions/{interaction}/report', [ReviewInteractionController::class, 'report'])->name('interactions.report');
+});

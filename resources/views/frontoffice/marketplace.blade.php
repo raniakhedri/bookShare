@@ -19,8 +19,8 @@
                     {{ $totalBooks }} Book(s) Available for Sharing
                 </div>
                 <h1 class="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-                    📚 BookShare 
-                    <span class="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                 Bookly
+                    <span class="bg-gradient-to-r from-black to-primary bg-clip-text text-transparent">
                         Marketplace
                     </span>
                 </h1>

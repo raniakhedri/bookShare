@@ -3,6 +3,11 @@
 @section('title', $book->title . ' - Bookly')
 
 @section('content')
+@php
+    $book->load(['reviews' => function($query) {
+        $query->with('user')->active()->latest();
+    }]);
+@endphp
 <div class="min-h-screen bg-[#FDFDFC] dark:bg-[#0a0a0a] py-8">
     <div class="container mx-auto px-4 lg:px-8 max-w-6xl">
         <!-- Breadcrumb amélioré -->
@@ -99,21 +104,7 @@
 
                     <!-- Actions principales -->
                     <div class="flex flex-col sm:flex-row gap-3">
-                        @if($book->availability)
-                            <button class="flex-1 px-6 py-3 bg-gradient-to-r from-[#1b1b18] to-[#2d2d2a] dark:from-[#eeeeec] dark:to-[#ffffff] text-white dark:text-[#1C1C1A] rounded-xl font-semibold hover:from-black hover:to-[#1b1b18] dark:hover:from-white dark:hover:to-[#f0f0f0] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group">
-                                <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                                </svg>
-                                Reserve This Book
-                            </button>
-                        @else
-                            <button class="flex-1 px-6 py-3 bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-xl font-semibold cursor-not-allowed flex items-center justify-center gap-3" disabled>
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                </svg>
-                                Currently Unavailable
-                            </button>
-                        @endif
+                       
                         
                         <button class="px-6 py-3 border-2 border-[#e3e3e0] dark:border-[#3E3E3A] text-[#1b1b18] dark:text-[#EDEDEC] rounded-xl font-semibold hover:border-[#f53003] dark:hover:border-[#FF4433] hover:text-[#f53003] dark:hover:text-[#FF4433] transition-all duration-300 flex items-center justify-center gap-3 group">
                             <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,6 +190,182 @@
                 </button>
             </div>
         </div>
+<!-- Reviews Section - Add this to your book_show.blade.php -->
+<div class="mt-12">
+    <div class="border-t border-gray-200 pt-8">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">Reviews</h3>
+                @php
+                    $avgRating = $book->reviews()->active()->avg('overall_rating') ?? 0;
+                    $reviewCount = $book->reviews()->active()->count();
+                @endphp
+                @if($reviewCount > 0)
+                    <div class="flex items-center mt-2">
+                        @for($i = 1; $i <= 5; $i++)
+                            <svg class="w-5 h-5 {{ $i <= $avgRating ? 'text-yellow-400' : 'text-gray-300' }}" 
+                                 fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        @endfor
+                        <span class="ml-2 text-gray-600">{{ number_format($avgRating, 1) }} ({{ $reviewCount }} {{ Str::plural('review', $reviewCount) }})</span>
+                    </div>
+                @else
+                    <p class="text-gray-600 mt-2">No reviews yet</p>
+                @endif
+            </div>
+
+            @auth
+                <a href="{{ route('reviews.create', $book->id) }}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-black font-medium py-2 px-4 rounded-lg transition duration-200">
+                    Write Review
+                </a>
+            @else
+                <a href="{{ route('login') }}" 
+                   class="bg-gray-600 hover:bg-gray-700 text-black font-medium py-2 px-4 rounded-lg transition duration-200">
+                    Login to Review
+                </a>
+            @endauth
+        </div>
+
+        @if($reviewCount > 0)
+            <!-- Review Summary Stats -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Rating Breakdown -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">Rating Breakdown</h4>
+                        @for($rating = 5; $rating >= 1; $rating--)
+                            @php
+                                $ratingCount = $book->reviews()->where('overall_rating', $rating)->count();
+                                $percentage = $reviewCount > 0 ? ($ratingCount / $reviewCount) * 100 : 0;
+                            @endphp
+                            <div class="flex items-center mb-2">
+                                <span class="text-sm text-gray-600 w-8">{{ $rating }}</span>
+                                <svg class="w-4 h-4 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2 mr-3">
+                                    <div class="bg-yellow-400 h-2 rounded-full" style="width: {{ $percentage }}%"></div>
+                                </div>
+                                <span class="text-sm text-gray-600 w-8">{{ $ratingCount }}</span>
+                            </div>
+                        @endfor
+                    </div>
+
+                    <!-- Additional Stats -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">Review Stats</h4>
+                        <div class="space-y-2 text-sm">
+                            @php
+                                $avgContent = $book->reviews()->whereNotNull('content_rating')->avg('content_rating');
+                                $avgCondition = $book->reviews()->whereNotNull('condition_rating')->avg('condition_rating');
+                                $recommendationRate = $book->reviews()->where('recommendation_level', '>=', 4)->count() / max($reviewCount, 1) * 100;
+                            @endphp
+                            @if($avgContent)
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Avg Content Rating:</span>
+                                    <span class="font-medium">{{ number_format($avgContent, 1) }}/5</span>
+                                </div>
+                            @endif
+                            @if($avgCondition)
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Avg Condition:</span>
+                                    <span class="font-medium">{{ number_format($avgCondition, 1) }}/5</span>
+                                </div>
+                            @endif
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Would Recommend:</span>
+                                <span class="font-medium">{{ number_format($recommendationRate, 0) }}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Most Helpful Review Preview -->
+                    @php
+                        $topReview = $book->reviews()->with('user')->active()->orderByDesc('helpful_votes')->first();
+                    @endphp
+                    @if($topReview)
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-3">Most Helpful Review</h4>
+                            <div class="bg-white p-4 rounded-lg border">
+                                <div class="flex items-center mb-2">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <svg class="w-4 h-4 {{ $i <= $topReview->overall_rating ? 'text-yellow-400' : 'text-gray-300' }}" 
+                                             fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                        </svg>
+                                    @endfor
+                                    <span class="ml-2 text-sm text-gray-600">by {{ $topReview->user?->name ?? 'Anonymous' }}</span>
+                                </div>
+                                <p class="text-sm text-gray-700 line-clamp-3">
+                                    {{ Str::limit($topReview->review_text, 150) }}
+                                </p>
+                                <div class="mt-2 text-xs text-gray-500">
+                                    {{ $topReview->helpful_votes }} found helpful
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Recent Reviews -->
+            <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-lg font-semibold text-gray-900">Recent Reviews</h4>
+                    <a href="{{ route('reviews.index', $book->id) }}" 
+                       class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        View All Reviews
+                    </a>
+                </div>
+
+                @php
+                    $recentReviews = $book->reviews()
+                        ->with(['user:id,name', 'interactions'])
+                        ->active()
+                        ->latest()
+                        ->limit(3)
+                        ->get();
+                @endphp
+
+                @foreach($recentReviews as $review)
+                    @include('frontoffice.reviews.partials.review-card', ['review' => $review])
+                @endforeach
+
+                @if($reviewCount > 3)
+                    <div class="text-center pt-6">
+                        <a href="{{ route('reviews.index', $book->id) }}" 
+                           class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            View All {{ $reviewCount }} Reviews
+                            <svg class="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                    </div>
+                @endif
+            </div>
+        @else
+            <!-- No Reviews State -->
+            <div class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">📝</div>
+                <h4 class="text-xl font-semibold text-gray-600 mb-2">No reviews yet</h4>
+                <p class="text-gray-500 mb-6">Be the first to share your thoughts about this book!</p>
+                @auth
+                    <a href="{{ route('reviews.create', $book->id) }}" 
+                       class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-black bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Write the First Review
+                    </a>
+                @else
+                    <p class="text-gray-500">
+                        <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 font-medium">Login</a> 
+                        to write the first review
+                    </p>
+                @endauth
+            </div>
+        @endif
+    </div>
+</div>
     </div>
 </div>
 @endsection
@@ -265,5 +432,11 @@
             justify-content: center;
         }
     }
+    .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 </style>
 @endpush
