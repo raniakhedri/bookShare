@@ -26,7 +26,7 @@
                         <li><a class="text-dark hover:text-primary font-heading font-medium {{ request()->routeIs('book') ? 'active' : '' }}"
                                 href="{{ route('book') }}">Book</a></li>
                         <li><a class="text-dark hover:text-primary font-heading font-medium {{ request()->routeIs('notes') ? 'active' : '' }}"
-                                href="{{ route('notes') }}">Notes</a></li>
+                                href="{{ url('/journals') }}">Journals</a></li>
                         <li><a class="text-dark hover:text-primary font-heading font-medium {{ request()->routeIs('groups') ? 'active' : '' }}"
                                 href="{{ route('groups') }}">Groups</a></li>
                         <li><a class="text-dark hover:text-primary font-heading font-medium {{ request()->routeIs('marketplace') ? 'active' : '' }}"

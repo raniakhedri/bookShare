@@ -14,7 +14,9 @@ use App\Http\Controllers\Admin\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Backoffice\BookController;
+use App\Http\Controllers\Frontoffice\JournalController;
+use App\Http\Controllers\Frontoffice\NoteController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -179,6 +181,29 @@ Route::middleware('auth')->prefix('marketplace')->name('marketplace.')->group(fu
 	Route::patch('transactions/{transaction}/respond', [TransactionWebController::class, 'respond'])->name('transactions.respond');
 	Route::patch('transactions/{transaction}/complete', [TransactionWebController::class, 'complete'])->name('transactions.complete');
 });
+
+// Livres
+Route::get('/books', [BookController::class, 'index'])->name('books.index');
+Route::get('/books/{book}/add-to-journal', [BookController::class, 'addToJournalForm'])->name('books.add-to-journal');
+Route::post('/books/{book}/store-in-journal', [BookController::class, 'storeInJournal'])->name('books.store-in-journal');
+Route::get('/journals/{journal}/books/{book}', [BookController::class, 'show'])->name('books.show');
+
+// Journaux
+Route::get('/journals', [JournalController::class, 'index'])->name('journals.index');
+Route::get('/journals/create', [JournalController::class, 'create'])->name('journals.create');
+Route::post('/journals', [JournalController::class, 'store'])->name('journals.store');
+Route::get('/journals/{journal}', [JournalController::class, 'show'])->name('journals.show');
+Route::get('/journals/{journal}/edit', [JournalController::class, 'edit'])->name('journals.edit');
+Route::put('/journals/{journal}', [JournalController::class, 'update'])->name('journals.update');
+Route::get('/journals/{journal}/archived', [JournalController::class, 'showArchived'])->name('journals.archived');
+Route::patch('/journals/{journal}/books/{book}/unarchive', [JournalController::class, 'unarchiveBook'])->name('journals.unarchive-book');
+Route::delete('/journals/{journal}/books/{book}/detach', [JournalController::class, 'detachBook'])->name('journals.detach-book');
+Route::patch('/journals/{journal}/books/{book}/archive', [JournalController::class, 'archiveBook'])->name('journals.archive-book'); 
+
+// Notes
+Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
+
 
 Route::get('/blog', function () {
 	return view('frontoffice.blog');
