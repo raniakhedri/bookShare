@@ -1,6 +1,29 @@
 @extends('backoffice.layouts.user_type.guest')
 
 @section('content')
+    <style>
+        :root {
+            --primary-color: #F86D72;
+            --primary-dark: #e55a5f;
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+        }
+
+        .text-primary-custom {
+            color: #F86D72 !important;
+        }
+
+        .text-gradient-primary {
+            background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            color: transparent !important;
+            display: inline-block;
+        }
+    </style>
 
     <div class="page-header section-height-75">
         <div class="container">
@@ -26,7 +49,8 @@
                             </div>
                         @endif
                         <div class="card-header pb-0 text-left bg-transparent">
-                            <h4 class="mb-0">Forgot your password? Enter your email here</h4>
+                            <h4 class="mb-0 text-gradient-primary font-weight-bold">Reset Your Password</h4>
+                            <p class="mb-0">Enter your email to receive password reset instructions</p>
                         </div>
                         <div class="card-body">
 
@@ -43,8 +67,8 @@
                                     </div>
                                 </div>
                                 <div class="text-center">
-                                    <button type="submit" class="btn bg-gradient-info w-100 mt-4 mb-0">Recover your
-                                        password</button>
+                                    <button type="submit" class="btn bg-gradient-primary w-100 mt-4 mb-0">Send Reset
+                                        Link</button>
                                 </div>
                             </form>
                         </div>

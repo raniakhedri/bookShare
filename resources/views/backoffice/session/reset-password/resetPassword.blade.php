@@ -1,6 +1,29 @@
 @extends('backoffice.layouts.user_type.guest')
 
 @section('content')
+    <style>
+        :root {
+            --primary-color: #F86D72;
+            --primary-dark: #e55a5f;
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+        }
+
+        .text-primary-custom {
+            color: #F86D72 !important;
+        }
+
+        .text-gradient-primary {
+            background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            color: transparent !important;
+            display: inline-block;
+        }
+    </style>
 
     <div class="page-header section-height-75">
         <div class="container">
@@ -8,7 +31,8 @@
                 <div class="col-xl-4 col-lg-5 col-md-6 d-flex flex-column mx-auto">
                     <div class="card card-plain mt-8">
                         <div class="card-header pb-0 text-left bg-transparent">
-                            <h4 class="mb-0">Change password</h4>
+                            <h4 class="mb-0 text-gradient-primary font-weight-bold">Change Password</h4>
+                            <p class="mb-0">Enter your new password below</p>
                         </div>
                         <div class="card-body">
                             <form role="form" action="/admin/reset-password" method="POST">
@@ -38,7 +62,7 @@
                                     <label for="password_confirmation">Confirm Password</label>
                                     <div class="">
                                         <input id="password-confirmation" name="password_confirmation" type="password"
-                                            class="form-control" placeholder="Password-confirmation"
+                                            class="form-control" placeholder="Confirm Password"
                                             aria-label="Password-confirmation" aria-describedby="Password-addon">
                                         @error('password')
                                             <p class="text-danger text-xs mt-2">{{ $message }}</p>
@@ -46,8 +70,8 @@
                                     </div>
                                 </div>
                                 <div class="text-center">
-                                    <button type="submit" class="btn bg-gradient-info w-100 mt-4 mb-0">Recover your
-                                        password</button>
+                                    <button type="submit" class="btn bg-gradient-primary w-100 mt-4 mb-0">Update
+                                        Password</button>
                                 </div>
                             </form>
                         </div>

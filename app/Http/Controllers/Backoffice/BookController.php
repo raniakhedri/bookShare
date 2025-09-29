@@ -4,9 +4,6 @@ namespace App\Http\Controllers\Backoffice;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Journal;
-use App\Models\Note;
-use App\Models\Book;
 
 class BookController extends Controller
 {
@@ -84,7 +81,10 @@ class BookController extends Controller
     /**
      * Display the specified resource.
      */
-
+    public function show(string $id)
+    {
+        //
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -139,51 +139,5 @@ class BookController extends Controller
         $book = \App\Models\Book::findOrFail($id);
         $book->delete();
         return redirect()->route('books.index')->with('success', 'Livre supprimé avec succès.');
-    }
-
-    // Formulaire pour ajouter un livre à un journal
-    public function addToJournalForm($bookId)
-    {
-        $book = Book::findOrFail($bookId);
-
-        // Tous les journaux publics (pas besoin d'auth)
-        $journals = Journal::all();
-
-        return view('backoffice.books.add-to-journal', compact('book', 'journals'));
-    }
-
-    // Stocker le livre dans le journal
-    public function storeInJournal(Request $request, $bookId)
-    {
-        $request->validate([
-            'journal_id' => 'required|exists:journals,id',
-        ]);
-
-        $journal = Journal::findOrFail($request->journal_id);
-        $book = Book::findOrFail($bookId);
-
-        // Vérifier si le livre est déjà dans le journal
-        if (!$journal->books()->where('book_id', $bookId)->exists()) {
-            $journal->books()->attach($bookId, ['archived' => false]);
-        }
-
-        return redirect()->route('journals.show', $journal->id)
-                         ->with('success', 'Livre ajouté au journal !');
-    }
-
-    // Afficher un livre dans un journal (sans auth)
-    public function show($journalId, $bookId)
-    {
-        $journal = Journal::findOrFail($journalId);
-        $book = Book::findOrFail($bookId);
-
-        // Vérifier si le livre appartient au journal
-        if (!$journal->books()->where('book_id', $bookId)->exists()) {
-            abort(403, 'Ce livre n’appartient pas à ce journal.');
-        }
-
-        $notes = $journal->notes()->where('book_id', $bookId)->orderBy('created_at', 'desc')->get();
-
-        return view('backoffice.books.show', compact('journal', 'book', 'notes'));
     }
 }

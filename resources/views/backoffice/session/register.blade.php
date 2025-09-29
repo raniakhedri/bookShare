@@ -1,17 +1,44 @@
 @extends('backoffice.layouts.user_type.guest')
 
 @section('content')
+  <style>
+    :root {
+      --primary-color: #F86D72;
+      --primary-dark: #e55a5f;
+    }
+
+    .bg-gradient-primary {
+      background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+    }
+
+    .text-primary-custom {
+      color: #F86D72 !important;
+    }
+
+    .text-gradient-primary {
+      background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+      color: transparent !important;
+      display: inline-block;
+    }
+
+    .mask.bg-gradient-primary {
+      background: linear-gradient(310deg, #F86D72 0%, #e55a5f 100%) !important;
+    }
+  </style>
 
   <section class="min-vh-100 mb-8">
     <div class="page-header align-items-start min-vh-50 pt-5 pb-11 mx-3 border-radius-lg"
       style="background-image: url('/assets/img/curved-images/curved14.jpg');">
-      <span class="mask bg-gradient-dark opacity-6"></span>
+      <span class="mask bg-gradient-primary opacity-6"></span>
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-lg-5 text-center mx-auto">
-            <h1 class="text-white mb-2 mt-5">Welcome!</h1>
-            <p class="text-lead text-white">Use these awesome forms to login or create new account in your project for
-              free.</p>
+            <h1 class="text-white mb-2 mt-5">Welcome to BookShare!</h1>
+            <p class="text-lead text-white">Join our community of book lovers. Create your account to start sharing and
+              discovering amazing books.</p>
           </div>
         </div>
       </div>
@@ -21,7 +48,7 @@
         <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
           <div class="card z-index-0">
             <div class="card-header text-center pt-4">
-              <h5>Register with</h5>
+              <h5 class="text-gradient-primary font-weight-bold">Join Bookly Community</h5>
             </div>
             <div class="row px-xl-5 px-sm-4 px-3">
               <div class="col-3 ms-auto px-1">
@@ -119,7 +146,8 @@
                 <div class="form-check form-check-info text-left">
                   <input class="form-check-input" type="checkbox" name="agreement" id="flexCheckDefault" checked>
                   <label class="form-check-label" for="flexCheckDefault">
-                    I agree the <a href="javascript:;" class="text-dark font-weight-bolder">Terms and Conditions</a>
+                    I agree the <a href="javascript:;" class="text-primary-custom font-weight-bolder">Terms and
+                      Conditions</a>
                   </label>
                   @error('agreement')
                     <p class="text-danger text-xs mt-2">First, agree to the Terms and Conditions, then try register again.
@@ -127,10 +155,10 @@
                   @enderror
                 </div>
                 <div class="text-center">
-                  <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign up</button>
+                  <button type="submit" class="btn bg-gradient-primary w-100 my-4 mb-2">Sign up</button>
                 </div>
                 <p class="text-sm mt-3 mb-0">Already have an account? <a href="/admin/login"
-                    class="text-dark font-weight-bolder">Sign in</a></p>
+                    class="text-primary-custom font-weight-bolder">Sign in</a></p>
               </form>
             </div>
           </div>

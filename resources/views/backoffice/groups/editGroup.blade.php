@@ -8,7 +8,7 @@
                     <h3 class="mb-0 font-weight-bold text-white drop-shadow-lg">Edit Group</h3>
                 </div>
                 <div class="card-body bg-white/80 rounded-bottom">
-                    <form action="{{ route('admin.groups.update', $group->id) }}" method="POST">
+                    <form action="{{ route('admin.groups.update', $group->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <div class="mb-3">

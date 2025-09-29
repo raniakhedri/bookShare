@@ -13,13 +13,14 @@ class Post extends Model
         'group_id',
         'user_id',
         'content',
+        'file',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-      public function comments()
+    public function comments()
     {
         return $this->hasMany(Comment::class);
     }

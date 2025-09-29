@@ -32,6 +32,53 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all market books owned by this user.
+     */
+    public function marketBooks()
+    {
+        return $this->hasMany(MarketBook::class, 'owner_id');
+    }
+
+    /**
+     * Get all transactions where this user is the requester.
+     */
+    public function requestedTransactions()
+    {
+        return $this->hasMany(Transaction::class, 'requester_id');
+    }
+
+    /**
+     * Get all transactions for books owned by this user.
+     */
+    public function receivedTransactions()
+    {
+        return $this->hasManyThrough(
+            Transaction::class,
+            MarketBook::class,
+            'owner_id',    // Foreign key on MarketBook table
+            'marketbook_id', // Foreign key on Transaction table
+            'id',          // Local key on User table
+            'id'           // Local key on MarketBook table
+        );
+    }
+
+    /**
+     * Check if user has admin role.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is a regular user.
+     */
+    public function isUser(): bool
+    {
+        return $this->role === 'user' || $this->role === 'visitor';
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
@@ -52,15 +99,5 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    public function journals()
-    {
-    return $this->hasMany(Journal::class);
-    }
-
-    public function notes()
-    {
-    return $this->hasMany(Note::class);
     }
 }

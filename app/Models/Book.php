@@ -17,7 +17,7 @@ class Book extends Model
            'availability',
            'publication_year',
            'image',
-           'file', // chemin du PDF
+           'file', 
            'user_id'
     ];
 

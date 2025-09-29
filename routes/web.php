@@ -1,5 +1,3 @@
-
-
 <?php
 
 use App\Http\Controllers\Backoffice\ChangePasswordController;
@@ -7,12 +5,15 @@ use App\Http\Controllers\Backoffice\InfoUserController;
 use App\Http\Controllers\Backoffice\RegisterController;
 use App\Http\Controllers\Backoffice\ResetController;
 use App\Http\Controllers\Backoffice\SessionsController;
+use App\Http\Controllers\Web\MarketplaceController;
+use App\Http\Controllers\Web\MarketBookWebController;
+use App\Http\Controllers\Web\TransactionWebController;
+use App\Http\Controllers\Web\AdminMarketplaceController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Backoffice\BookController;
-use App\Http\Controllers\Frontoffice\JournalController;
-use App\Http\Controllers\Frontoffice\NoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,11 +27,40 @@ use App\Http\Controllers\Frontoffice\NoteController;
 */
 
 // FRONTOFFICE ROUTES (BookShare - Public User Interface)
-// Redirect root to admin login
 Route::get('/', function () {
 	return redirect()->route('admin.login');
 });
 
+// MARKETPLACE ROUTES
+// Main marketplace index route (integrated with existing structure)  
+Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace');
+
+Route::middleware('auth')->prefix('marketplace')->group(function () {
+	// Other marketplace pages
+	Route::get('/browse', [MarketplaceController::class, 'browse'])->name('marketplace.browse');
+	Route::get('/my-books', [MarketplaceController::class, 'myBooks'])->name('marketplace.my-books');
+	Route::get('/my-requests', [MarketplaceController::class, 'myRequests'])->name('marketplace.my-requests');
+	Route::get('/received-requests', [MarketplaceController::class, 'receivedRequests'])->name('marketplace.received-requests');
+
+	// Market book management
+	Route::resource('books', MarketBookWebController::class)->names([
+		'index' => 'marketplace.books.index',
+		'create' => 'marketplace.books.create',
+		'store' => 'marketplace.books.store',
+		'show' => 'marketplace.books.show',
+		'edit' => 'marketplace.books.edit',
+		'update' => 'marketplace.books.update',
+		'destroy' => 'marketplace.books.destroy',
+	]);
+	Route::patch('books/{book}/toggle-availability', [MarketBookWebController::class, 'toggleAvailability'])->name('marketplace.books.toggle-availability');
+
+	// Transaction management
+	Route::get('books/{book}/request', [TransactionWebController::class, 'create'])->name('marketplace.transactions.create');
+	Route::post('transactions', [TransactionWebController::class, 'store'])->name('marketplace.transactions.store');
+	Route::get('transactions/{transaction}', [TransactionWebController::class, 'show'])->name('marketplace.transactions.show');
+	Route::patch('transactions/{transaction}/respond', [TransactionWebController::class, 'respond'])->name('marketplace.transactions.respond');
+	Route::patch('transactions/{transaction}/complete', [TransactionWebController::class, 'complete'])->name('marketplace.transactions.complete');
+});
 
 Route::get('/book', function () {
 	$books = \App\Models\Book::with('category')->paginate(12);
@@ -48,7 +78,9 @@ Route::get('/groups/{id}/wall', function ($id) {
 	$group = \App\Models\Group::with(['users', 'creator', 'posts.user', 'posts.comments.user'])->findOrFail($id);
 	$user = auth()->user();
 	$memberCount = $group->users->count();
-	$recentMembers = $group->users->sortByDesc(function($user) { return $user->pivot->created_at ?? $user->created_at; })->take(8);
+	$recentMembers = $group->users->sortByDesc(function ($user) {
+		return $user->pivot->created_at ?? $user->created_at;
+	})->take(8);
 	$posts = $group->posts()->latest()->get();
 	return view('frontoffice.group_wall', compact('group', 'memberCount', 'recentMembers', 'posts'));
 })->name('frontoffice.group.wall');
@@ -99,18 +131,23 @@ Route::post('/groups/{id}/join', function ($id) {
 Route::post('/groups/{id}/wall', function ($id, Request $request) {
 	// Handle post creation logic here
 	$request->validate([
-		'content' => 'required|string|max:1000',
+		'content' => 'nullable|string|max:1000',
+		'file' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,mov,avi,pdf|max:8192',
 	]);
 	$group = \App\Models\Group::findOrFail($id);
 	$user = auth()->user();
 	if (!$user) {
 		return redirect()->route('login');
 	}
-	\App\Models\Post::create([
+	$data = [
 		'group_id' => $group->id,
 		'user_id' => $user->id,
-		'content' => $request->input('content'),
-	]);
+		'content' => $request->input('content') ?? '',
+	];
+	if ($request->hasFile('file')) {
+		$data['file'] = $request->file('file')->store('posts', 'public');
+	}
+	\App\Models\Post::create($data);
 	return redirect()->route('frontoffice.group.wall', $id)->with('success', 'Post created successfully!');
 })->name('frontoffice.group.wall.post');
 Route::get('/notes', function () {
@@ -122,9 +159,26 @@ Route::get('/groups', function () {
 	return view('frontoffice.groups', compact('groups'));
 })->name('groups');
 
-Route::get('/marketplace', function () {
-	return view('frontoffice.marketplace');
-})->name('marketplace');
+Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace');
+
+// Marketplace functionality routes (integrated with existing structure)
+Route::middleware('auth')->prefix('marketplace')->name('marketplace.')->group(function () {
+	Route::get('/browse', [MarketplaceController::class, 'browse'])->name('browse');
+	Route::get('/my-books', [MarketplaceController::class, 'myBooks'])->name('my-books');
+	Route::get('/my-requests', [MarketplaceController::class, 'myRequests'])->name('my-requests');
+	Route::get('/received-requests', [MarketplaceController::class, 'receivedRequests'])->name('received-requests');
+
+	// Book management
+	Route::resource('books', MarketBookWebController::class);
+	Route::patch('books/{book}/toggle-availability', [MarketBookWebController::class, 'toggleAvailability'])->name('books.toggle-availability');
+
+	// Transaction management
+	Route::get('books/{book}/request', [TransactionWebController::class, 'create'])->name('transactions.create');
+	Route::post('transactions', [TransactionWebController::class, 'store'])->name('transactions.store');
+	Route::get('transactions/{transaction}', [TransactionWebController::class, 'show'])->name('transactions.show');
+	Route::patch('transactions/{transaction}/respond', [TransactionWebController::class, 'respond'])->name('transactions.respond');
+	Route::patch('transactions/{transaction}/complete', [TransactionWebController::class, 'complete'])->name('transactions.complete');
+});
 
 Route::get('/blog', function () {
 	return view('frontoffice.blog');
@@ -133,30 +187,6 @@ Route::get('/blog', function () {
 Route::get('/community', function () {
 	return view('frontoffice.community');
 })->name('community');
-
-// Livres
-Route::get('/books', [BookController::class, 'index'])->name('books.index');
-Route::get('/books/{book}/add-to-journal', [BookController::class, 'addToJournalForm'])->name('books.add-to-journal');
-Route::post('/books/{book}/store-in-journal', [BookController::class, 'storeInJournal'])->name('books.store-in-journal');
-Route::get('/journals/{journal}/books/{book}', [BookController::class, 'show'])->name('books.show');
-
-// Journaux
-Route::get('/journals', [JournalController::class, 'index'])->name('journals.index');
-Route::get('/journals/create', [JournalController::class, 'create'])->name('journals.create');
-Route::post('/journals', [JournalController::class, 'store'])->name('journals.store');
-Route::get('/journals/{journal}', [JournalController::class, 'show'])->name('journals.show');
-Route::get('/journals/{journal}/edit', [JournalController::class, 'edit'])->name('journals.edit');
-Route::put('/journals/{journal}', [JournalController::class, 'update'])->name('journals.update');
-Route::get('/journals/{journal}/archived', [JournalController::class, 'showArchived'])->name('journals.archived');
-Route::patch('/journals/{journal}/books/{book}/unarchive', [JournalController::class, 'unarchiveBook'])->name('journals.unarchive-book');
-Route::delete('/journals/{journal}/books/{book}/detach', [JournalController::class, 'detachBook'])->name('journals.detach-book');
-Route::patch('/journals/{journal}/books/{book}/archive', [JournalController::class, 'archiveBook'])->name('journals.archive-book'); 
-
-// Notes
-Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
-Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
-
-
 
 // Admin session routes (without prefix for backward compatibility)
 Route::group(['middleware' => 'guest'], function () {
@@ -202,8 +232,12 @@ Route::group(['middleware' => 'guest'], function () {
 // Route for posting a comment on a group wall post
 Route::post('/groups/{group}/wall/{post}/comment', function ($groupId, $postId, Illuminate\Http\Request $request) {
 	$request->validate([
-		'content' => 'required|string|max:1000',
+		'content' => 'nullable|string|max:1000',
+		'file' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf|max:4096',
 	]);
+	if (!$request->filled('content') && !$request->hasFile('file')) {
+		return redirect()->back()->withErrors(['content' => 'Vous devez écrire un commentaire ou joindre un fichier.']);
+	}
 	$user = auth()->user();
 	if (!$user) {
 		return redirect()->route('login');
@@ -211,8 +245,10 @@ Route::post('/groups/{group}/wall/{post}/comment', function ($groupId, $postId, 
 	$comment = new \App\Models\Comment();
 	$comment->post_id = $postId;
 	$comment->user_id = $user->id;
-	$comment->content = $request->input('content');
-	// Optionally handle file upload here
+	$comment->content = $request->input('content') ?? '';
+	if ($request->hasFile('file')) {
+		$comment->file = $request->file('file')->store('comments', 'public');
+	}
 	$comment->save();
 	return redirect()->back()->with('success', 'Comment added!');
 })->name('frontoffice.group.comment');
@@ -223,24 +259,24 @@ Route::get('/home', function () {
 	return view('frontoffice.home');
 })->name('home');
 // BACKOFFICE ROUTES (Admin Panel - Authentication Required)
-Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function () {
 	// Update group (Backoffice)
-Route::put('groups/update/{id}', function ($id, Illuminate\Http\Request $request) {
-	$group = \App\Models\Group::findOrFail($id);
-	$data = $request->validate([
-		'name' => 'required|string|max:255',
-		'theme' => 'required|string|max:255',
-		'description' => 'nullable|string',
-		'image' => 'nullable|image|max:2048',
-	]);
+	Route::put('groups/update/{id}', function ($id, Illuminate\Http\Request $request) {
+		$group = \App\Models\Group::findOrFail($id);
+		$data = $request->validate([
+			'name' => 'required|string|max:255',
+			'theme' => 'required|string|max:255',
+			'description' => 'nullable|string',
+			'image' => 'nullable|image|max:2048',
+		]);
 
-	if ($request->hasFile('image')) {
-		$data['image'] = $request->file('image')->store('groups', 'public');
-	}
+		if ($request->hasFile('image')) {
+			$data['image'] = $request->file('image')->store('groups', 'public');
+		}
 
-	$group->update($data);
-	return redirect()->route('admin.groups')->with('success', 'Group updated successfully!');
-})->name('admin.groups.update');
+		$group->update($data);
+		return redirect()->route('admin.groups')->with('success', 'Group updated successfully!');
+	})->name('admin.groups.update');
 	// Edit group (Backoffice)
 	Route::get('groups/editGroup/{id}', function ($id) {
 		$group = \App\Models\Group::findOrFail($id);
@@ -260,24 +296,28 @@ Route::put('groups/update/{id}', function ($id, Illuminate\Http\Request $request
 		}
 
 		$data['creator_id'] = auth()->id();
-        
+
 		\App\Models\Group::create($data);
-	return redirect()->route('admin.groups')->with('success', 'Group created successfully!');
+		return redirect()->route('admin.groups')->with('success', 'Group created successfully!');
 	})->name('admin.groups.store');
 	// Delete group (Backoffice)
 	Route::delete('groups/{group}', function ($groupId) {
 		$group = \App\Models\Group::findOrFail($groupId);
 		$group->delete();
-	return redirect()->route('admin.groups')->with('success', 'Group deleted successfully!');
+		return redirect()->route('admin.groups')->with('success', 'Group deleted successfully!');
 	})->name('admin.groups.destroy');
 	// CRUD Books (Backoffice)
 	Route::resource('books', App\Http\Controllers\Backoffice\BookController::class);
 	// CRUD Categories (Backoffice)
 	Route::resource('categories', App\Http\Controllers\Backoffice\CategoryController::class);
 
-	Route::get('dashboard', function () {
-		return view('backoffice.dashboard');
-	})->name('admin.dashboard');
+	Route::get('dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+	// Admin marketplace management routes
+	Route::prefix('marketplace')->name('marketplace.')->group(function () {
+		Route::get('dashboard', [AdminController::class, 'marketplaceDashboard'])->name('admin.dashboard');
+		Route::resource('users', UserController::class);
+	});
 
 	// Frontoffice pages in admin area
 	Route::get('book', function () {
@@ -285,9 +325,9 @@ Route::put('groups/update/{id}', function ($id, Illuminate\Http\Request $request
 		$categories = \App\Models\Category::all();
 		return view('backoffice.frontoffice.book', compact('books', 'categories'));
 	})->name('admin.book');
-Route::get('groups/create', function () {
-	return view('backoffice.groups.create');
-})->name('admin.groups.create');
+	Route::get('groups/create', function () {
+		return view('backoffice.groups.create');
+	})->name('admin.groups.create');
 	Route::get('notes', function () {
 		return view('backoffice.frontoffice.notes');
 	})->name('admin.notes');
@@ -300,10 +340,28 @@ Route::get('groups/create', function () {
 		return view('backoffice.frontoffice.groups', compact('groups', 'totalMembers', 'averageMembers', 'themes'));
 	})->name('admin.groups');
 
+	Route::get('marketplace', [AdminMarketplaceController::class, 'index'])->name('admin.marketplace');
+	Route::delete('marketplace/book/{id}', [AdminMarketplaceController::class, 'destroy'])->name('admin.marketplace.book.delete');
 
-	Route::get('marketplace', function () {
-		return view('backoffice.frontoffice.marketplace');
-	})->name('admin.marketplace');
+	// Debug route to test admin access
+	Route::get('debug-auth', function () {
+		$user = auth()->user();
+		return response()->json([
+			'authenticated' => auth()->check(),
+			'user' => $user ? [
+				'id' => $user->id,
+				'name' => $user->name,
+				'email' => $user->email,
+				'role' => $user->role,
+				'isAdmin' => $user->isAdmin(),
+			] : null,
+		]);
+	})->name('admin.debug-auth');
+
+	// Moved to admin marketplace group
+	// Route::get('marketplace', function () {
+	// 	return view('backoffice.frontoffice.marketplace');
+	// })->name('admin.marketplace');
 
 	Route::get('blog', function () {
 		return view('backoffice.frontoffice.blog');
@@ -345,8 +403,8 @@ Route::get('groups/create', function () {
 		return view('backoffice.static-sign-up');
 	})->name('admin.sign-up');
 
-// Global logout route for all users (frontoffice and backoffice)
-Route::get('/logout', [App\Http\Controllers\Backoffice\SessionsController::class, 'destroy'])->name('logout');
+	// Global logout route for all users (frontoffice and backoffice)
+	Route::get('/logout', [App\Http\Controllers\Backoffice\SessionsController::class, 'destroy'])->name('logout');
 	Route::post('/user-profile', [InfoUserController::class, 'store']);
 });
 

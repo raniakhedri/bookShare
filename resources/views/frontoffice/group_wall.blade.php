@@ -29,8 +29,8 @@
         <!-- Colonne gauche : Infos groupe -->
         <aside class="md:w-1/3 w-full flex flex-col gap-6 order-2 md:order-1">
             <!-- Header du groupe modernisé -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 flex flex-col items-center text-center">
-                <div class="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center mb-3 overflow-hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center text-center">
+                <div class="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center mb-3 overflow-hidden shadow-md">
                     @if($group->image)
                         <img src="{{ asset('storage/'.$group->image) }}" alt="Image du groupe" class="w-full h-full object-cover rounded-full">
                     @else
@@ -39,163 +39,261 @@
                 </div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ $group->name }}</h1>
                 <div class="flex flex-wrap gap-2 justify-center mb-2">
-                    <span class="bg-primary py-1 px-3 text-xs text-white rounded-lg">{{ $group->theme }}</span>
-                    <span class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-3 py-1 rounded-full">{{ $group->is_public ? 'Public' : 'Privé' }}</span>
+                    <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-3 py-1 rounded-full font-medium">{{ $group->theme }}</span>
+                    <span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-3 py-1 rounded-full">{{ $group->is_public ? 'Public' : 'Privé' }}</span>
                 </div>
-                <p class="text-gray-700 dark:text-gray-300 text-sm mb-2">{{ $group->description }}</p>
-                <div class="flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400 items-center">
-                    <span>👤 Créé par {{ $group->creator->name ?? 'Administrateur' }}</span>
-                    <span>📅 Créé le {{ $group->created_at->format('d/m/Y') }}</span>
-                    <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-3 py-1 rounded-full font-bold mt-2">{{ $memberCount }} membres</span>
-                    <span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs px-3 py-1 rounded-full font-bold">{{ $posts->count() }} publications</span>
+                <p class="text-gray-700 dark:text-gray-300 text-sm mb-4 leading-relaxed">{{ $group->description }}</p>
+                <div class="flex flex-col gap-2 text-sm text-gray-600 dark:text-gray-400 items-center w-full">
+                    <div class="flex items-center gap-2">
+                        <span class="flex items-center justify-center w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full font-bold text-xs">A</span>
+                        <span>Créé par {{ $group->creator->name ?? 'Administrateur' }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-gray-100 dark:bg-gray-700 p-1 rounded-full">📅</span>
+                        <span>Créé le {{ $group->created_at->format('d/m/Y') }}</span>
+                    </div>
+                    <div class="flex items-center justify-center gap-3 mt-2 w-full">
+                        <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs px-3 py-1 rounded-full font-bold">{{ $memberCount }} membres</span>
+                        <span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs px-3 py-1 rounded-full font-bold">{{ $posts->count() }} publications</span>
+                    </div>
                 </div>
             </div>
+            
             <!-- Membres récents -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-4">
-                <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-3">Membres récents</h3>
-                <div class="grid grid-cols-4 gap-2 mb-3">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 p-1 rounded-full">👥</span>
+                    Membres récents
+                </h3>
+                <div class="grid grid-cols-4 gap-3 mb-3">
                     @foreach($recentMembers as $member)
-                        <div class="text-center">
-                            <div class="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full mx-auto mb-1 flex items-center justify-center text-white text-sm font-bold">
+                        <div class="text-center group cursor-pointer">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full mx-auto mb-1 flex items-center justify-center text-white text-sm font-bold shadow-md group-hover:shadow-lg transition-all">
                                 {{ substr($member->name, 0, 1) }}
                             </div>
-                            <span class="text-xs text-gray-600 dark:text-gray-400 truncate block">{{ explode(' ', $member->name)[0] }}</span>
+                            <div class="flex items-center justify-center gap-1">
+                                <span class="flex items-center justify-center w-5 h-5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full font-bold text-xs">{{ strtoupper(substr($member->name, 0, 1)) }}</span>
+                                <span class="text-xs text-gray-600 dark:text-gray-400 truncate block group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ explode(' ', $member->name)[0] }}</span>
+                            </div>
                         </div>
                     @endforeach
                 </div>
-                <button class="w-full text-center text-blue-600 dark:text-blue-400 text-sm font-medium py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <button class="w-full text-center text-blue-600 dark:text-blue-400 text-sm font-medium py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center justify-center gap-1">
                     Voir tous les membres
+                    <span>→</span>
                 </button>
             </div>
+            
+            <!-- Règles du groupe -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 p-1 rounded-full">📋</span>
+                    Règles du groupe
+                </h3>
+                <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500 mt-0.5">•</span>
+                        <span>Soyez respectueux des autres membres</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500 mt-0.5">•</span>
+                        <span>Partagez du contenu pertinent</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500 mt-0.5">•</span>
+                        <span>Pas de spam ou de publicité non autorisée</span>
+                    </li>
+                </ul>
+            </div>
         </aside>
+        
         <!-- Colonne centrale : Posts -->
         <main class="md:w-2/3 w-full flex flex-col gap-6 order-1 md:order-2">
             <!-- Formulaire de publication façon Facebook -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 flex items-start gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                    {{ substr(auth()->user()->name, 0, 1) }}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                        {{ substr(auth()->user()->name, 0, 1) }}
+                    </div>
+                        <form action="{{ route('frontoffice.group.wall.post', $group->id) }}" method="POST" enctype="multipart/form-data" class="flex-1">
+                        @csrf
+                        <textarea name="content" rows="3" class="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white placeholder-gray-500 transition-all" placeholder="Exprimez-vous dans ce groupe..."></textarea>
+                        <div class="flex justify-between items-center mt-3 px-1">
+                            <div class="flex gap-2 items-center">
+                                <label for="post-file" class="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                                    <span class="text-lg">🖼️</span>
+                                    <span>Photo</span>
+                                </label>
+                                <label for="post-file" class="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors text-sm p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                                    <span class="text-lg">📹</span>
+                                    <span>Vidéo</span>
+                                </label>
+                                <label for="post-file" class="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-sm p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                                    <span class="text-lg">📄</span>
+                                    <span>PDF</span>
+                                </label>
+                                <input type="file" name="file" id="post-file" class="hidden" accept="image/*,video/*,application/pdf">
+                            </div>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-base font-medium shadow-md flex items-center gap-2 transition-all duration-150 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="text-lg">📤</span>
+                                Publier
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <form action="{{ route('frontoffice.group.wall.post', $group->id) }}" method="POST" class="flex-1 flex items-center gap-2">
-                    @csrf
-                    <textarea name="content" rows="2" class="w-full border border-gray-200 dark:border-gray-600 rounded-full px-5 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white placeholder-gray-500" placeholder="Exprimez-vous dans ce groupe..."></textarea>
-                    <button type="submit" class="bg-purple-700 hover:bg-purple-800 text-black px-6 py-2 rounded-full text-base font-bold shadow-lg flex items-center gap-2 transition-all duration-150 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-700 disabled:opacity-50">
-            @if(session('success'))
-                <div class="mb-4 px-4 py-3 rounded-lg bg-green-100 text-green-800 border border-green-300">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if($errors->any())
-                <div class="mb-4 px-4 py-3 rounded-lg bg-red-100 text-red-800 border border-red-300">
-                    <ul class="list-disc pl-5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-                        <span class="text-lg">✉️</span> Poster
-                    </button>
-                </form>
             </div>
+            
+            <!-- Filtres de publications -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-3">
+                <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                    <button class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap">Tous les posts</button>
+                    <button class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Articles</button>
+                    <button class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Photos</button>
+                    <button class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Vidéos</button>
+                    <button class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Fichiers</button>
+                </div>
+            </div>
+            
             <!-- Liste des publications -->
             @forelse($posts as $post)
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow mb-6 hover:shadow-xl transition-all duration-200 overflow-hidden">
-                    <div class="p-5 pb-3 flex items-start gap-4">
-                        <!-- Avatar principal du post -->
-                        <div class="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200 hover:shadow-lg">
+                    <!-- En-tête du post -->
+                    <div class="p-4 flex items-start gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
                             {{ substr($post->user->name, 0, 1) }}
                         </div>
-                        <div class="flex-1">
+                        <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 mb-1">
-                                <!-- Ajout de l'icône alphabet à côté du nom -->
-                                <span class="w-7 h-7 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 rounded-full flex items-center justify-center font-bold text-base">
-                                    {{ strtoupper(substr($post->user->name, 0, 1)) }}
-                                </span>
+                                <span class="flex items-center justify-center w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full font-bold text-xs">{{ strtoupper(substr($post->user->name, 0, 1)) }}</span>
                                 <span class="font-semibold text-gray-900 dark:text-white">{{ $post->user->name }}</span>
-                                <span class="text-xs text-gray-400">• {{ $post->created_at->diffForHumans() }}</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">•</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $post->created_at->diffForHumans() }}</span>
                             </div>
-                            <div class="text-gray-800 dark:text-gray-200 leading-relaxed mb-2">{{ $post->content }}</div>
-                            <div class="flex gap-4 text-sm text-gray-500 dark:text-gray-400 mb-2">
-                                <button class="flex items-center gap-1 hover:text-blue-600 transition-all"><span>👍</span> J'aime</button>
-                                <button class="flex items-center gap-1 hover:text-blue-600 transition-all"><span>💬</span> Commenter</button>
-                                <button class="flex items-center gap-1 hover:text-blue-600 transition-all"><span>🔗</span> Partager</button>
-                            </div>
-                        </div>
-                        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors text-xl px-2">⋯</button>
-                    </div>
-                    <!-- Commentaires -->
-                    <div class="bg-gray-50 dark:bg-gray-750 px-6 py-4">
-                        @forelse($post->comments as $comment)
-                            <div class="flex gap-3 mb-4 last:mb-0 items-start">
-                                <!-- Avatar du commentaire -->
-                                <div class="w-9 h-9 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full flex items-center justify-center text-white text-base font-bold flex-shrink-0">
-                                    {{ substr($comment->user->name, 0, 1) }}
+                            <div class="text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap">{{ $post->content }}</div>
+                            @if($post->file)
+                                <div class="mt-2">
+                                    @php $ext = strtolower(pathinfo($post->file, PATHINFO_EXTENSION)); @endphp
+                                    @if(in_array($ext, ['jpg','jpeg','png','gif']))
+                                        <img src="{{ asset('storage/' . $post->file) }}" alt="Image" class="max-w-full rounded-lg shadow border max-h-80">
+                                    @elseif(in_array($ext, ['mp4','mov','avi']))
+                                        <video controls class="max-w-full rounded-lg shadow border max-h-80">
+                                            <source src="{{ asset('storage/' . $post->file) }}" type="video/{{ $ext }}">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    @elseif($ext === 'pdf')
+                                        <a href="{{ asset('storage/' . $post->file) }}" target="_blank" class="inline-flex items-center space-x-1 text-blue-600 dark:text-blue-400 text-sm">
+                                            <span>📄</span>
+                                            <span>Document PDF</span>
+                                        </a>
+                                    @else
+                                        <a href="{{ asset('storage/' . $post->file) }}" target="_blank" class="inline-flex items-center space-x-1 text-blue-600 dark:text-blue-400 text-sm">
+                                            <span>📎</span>
+                                            <span>Télécharger le fichier</span>
+                                        </a>
+                                    @endif
                                 </div>
-                                <div class="flex-1">
-                                    <div class="bg-white dark:bg-gray-700 rounded-2xl px-4 py-2 mb-1 shadow-sm">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <!-- Ajout de l'icône alphabet à côté du nom du commentateur -->
-                                            <span class="w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 rounded-full flex items-center justify-center font-bold text-xs">
-                                                {{ strtoupper(substr($comment->user->name, 0, 1)) }}
-                                            </span>
-                                            <span class="font-semibold text-sm text-gray-900 dark:text-white">{{ $comment->user->name }}</span>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
-                                        </div>
-                                        <p class="text-sm text-gray-800 dark:text-gray-200 mb-0">{{ $comment->content }}</p>
-                                        @if($comment->file)
-                                            <div class="mt-2">
-                                                @php $ext = strtolower(pathinfo($comment->file, PATHINFO_EXTENSION)); @endphp
-                                                @if(in_array($ext, ['jpg','jpeg','png','gif']))
-                                                    <img src="{{ asset('storage/' . $comment->file) }}" alt="Image" class="max-w-full rounded-lg shadow border max-h-40">
-                                                @elseif($ext === 'pdf')
-                                                    <a href="{{ asset('storage/' . $comment->file) }}" target="_blank" class="inline-flex items-center space-x-1 text-blue-600 dark:text-blue-400 text-sm">
-                                                        <span>📄</span>
-                                                        <span>Document PDF</span>
-                                                    </a>
-                                                @else
-                                                    <a href="{{ asset('storage/' . $comment->file) }}" target="_blank" class="inline-flex items-center space-x-1 text-blue-600 dark:text-blue-400 text-sm">
-                                                        <span>📎</span>
-                                                        <span>Télécharger le fichier</span>
-                                                    </a>
-                                                @endif
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div class="flex items-center gap-3 mt-1 px-1">
-                                        <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-all">J'aime</button>
-                                        <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-all">Répondre</button>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
-                                Aucun commentaire pour le moment
-                            </div>
-                        @endforelse
-                        <!-- Formulaire de commentaire -->
-                        <form action="{{ route('frontoffice.group.comment', [$group->id, $post->id]) }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-3 mt-2">
-                            @csrf
-                            <div class="w-9 h-9 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full flex items-center justify-center text-white text-base font-bold flex-shrink-0">
-                                {{ substr(auth()->user()->name, 0, 1) }}
-                            </div>
-                            <div class="flex-1 flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-2">
-                                <textarea name="content" rows="1" class="w-full border-0 bg-transparent focus:ring-0 text-sm resize-none dark:text-white placeholder-gray-500" placeholder="Commenter ce post..."></textarea>
-                                <button type="submit" class="ml-2 bg-purple-700 hover:bg-purple-800 text-black px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1 shadow transition-colors">
-                                    <span class="text-base">➡️</span> Commenter
+                            @endif
+                            
+                            <!-- Actions du post -->
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700 mt-3">
+                                <button class="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <span class="text-lg">👍</span>
+                                    <span class="text-sm font-medium">J'aime</span>
+                                </button>
+                                <button class="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 comment-trigger" data-post-id="{{ $post->id }}">
+                                    <span class="text-lg">💬</span>
+                                    <span class="text-sm font-medium">Commenter</span>
+                                </button>
+                                <button class="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <span class="text-lg">🔗</span>
+                                    <span class="text-sm font-medium">Partager</span>
                                 </button>
                             </div>
-                            <button type="button" class="text-gray-400 hover:text-blue-500 transition-colors" title="Emoji">
-                                <span class="text-sm">😊</span>
+                        </div>
+                        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors text-xl p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Plus d'options">
+                            ⋯
+                        </button>
+                    </div>
+                    
+                    <!-- Commentaires existants -->
+                    @if($post->comments->count() > 0)
+                        <div class="bg-gray-50 dark:bg-gray-750 px-4 py-3 border-t border-gray-100 dark:border-gray-700">
+                            <div class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-1">
+                                <span>💬</span>
+                                {{ $post->comments->count() }} commentaire(s)
+                            </div>
+                            
+                            @foreach($post->comments as $comment)
+                                <div class="flex gap-3 mb-4 last:mb-0 items-start">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-black text-sm font-bold flex-shrink-0 shadow-sm">
+                                        {{ substr($comment->user->name, 0, 1) }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="bg-white dark:bg-gray-700 rounded-xl px-3 py-2 mb-1 shadow-sm border border-gray-100 dark:border-gray-600">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="font-semibold text-sm text-gray-900 dark:text-white">{{ $comment->user->name }}</span>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
+                                            </div>
+                                            <p class="text-sm text-gray-800 dark:text-gray-200 mb-0">{{ $comment->content }}</p>
+                                            @if($comment->file)
+                                                <div class="mt-2">
+                                                    @php $ext = strtolower(pathinfo($comment->file, PATHINFO_EXTENSION)); @endphp
+                                                    @if(in_array($ext, ['jpg','jpeg','png','gif']))
+                                                        <img src="{{ asset('storage/' . $comment->file) }}" alt="Image" class="max-w-full rounded-lg shadow border max-h-40">
+                                                    @elseif($ext === 'pdf')
+                                                        <a href="{{ asset('storage/' . $comment->file) }}" target="_blank" class="inline-flex items-center space-x-1 text-blue-600 dark:text-blue-400 text-sm">
+                                                            <span>📄</span>
+                                                            <span>Document PDF</span>
+                                                        </a>
+                                                    @else
+                                                        <a href="{{ asset('storage/' . $comment->file) }}" target="_blank" class="inline-flex items-center space-x-1 text-blue-600 dark:text-blue-400 text-sm">
+                                                            <span>📎</span>
+                                                            <span>Télécharger le fichier</span>
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-3 mt-1 px-1">
+                                            <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors px-1 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700">J'aime</button>
+                                            <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors px-1 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700">Répondre</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    
+                    <!-- Formulaire de commentaire -->
+                    <div class="px-4 py-3 bg-gray-50 dark:bg-gray-750 border-t border-gray-100 dark:border-gray-700">
+                        <form action="{{ route('frontoffice.group.comment', [$group->id, $post->id]) }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
+                            @csrf
+                            <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-black text-sm font-bold flex-shrink-0 shadow-sm">
+                                {{ substr(auth()->user()->name, 0, 1) }}
+                            </div>
+                            <div class="flex-1 flex items-center bg-white dark:bg-gray-700 rounded-full px-3 py-1.5 border border-gray-200 dark:border-gray-600 shadow-sm">
+                                <textarea name="content" rows="1" class="w-full border-0 bg-transparent focus:ring-0 text-sm resize-none dark:text-white placeholder-gray-500 focus:outline-none comment-field" data-post-id="{{ $post->id }}" placeholder="Écrire un commentaire..."></textarea>
+                                <div class="flex items-center gap-1 ml-2">
+                                    <button type="button" class="text-gray-400 hover:text-yellow-500 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600" title="Emoji">
+                                        <span class="text-sm">😊</span>
+                                    </button>
+                                    <label for="file-{{ $post->id }}" class="cursor-pointer text-gray-400 hover:text-green-500 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600" title="Joindre un fichier">
+                                        <span class="text-sm">📎</span>
+                                    </label>
+                                    <input type="file" name="file" id="file-{{ $post->id }}" class="hidden" accept="image/*,application/pdf">
+                                    <button type="submit" name="send_file" class="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow transition-colors" style="min-width:90px;">
+                                        <span class="text-base">📤</span> Envoyer fichier
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full text-sm font-medium shadow-sm transition-all duration-150 hover:shadow-md ml-1 comment-submit" data-post-id="{{ $post->id }}" disabled>
+                                <span class="text-base">➡️</span>
                             </button>
-                            <label for="file-{{ $post->id }}" class="cursor-pointer text-gray-400 hover:text-green-500 transition-colors" title="Joindre un fichier">
-                                <span class="text-sm">📎</span>
-                            </label>
-                            <input type="file" name="file" id="file-{{ $post->id }}" class="hidden" accept="image/*,application/pdf">
                         </form>
                     </div>
                 </div>
             @empty
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-8 text-center">
                     <div class="text-6xl mb-4 text-gray-300 dark:text-gray-600">📝</div>
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Aucune publication</h3>
                     <p class="text-gray-500 dark:text-gray-400 text-sm">Soyez le premier à publier dans ce groupe !</p>
@@ -231,45 +329,27 @@
 /* Style pour la zone de texte qui s'agrandit */
 textarea {
     transition: all 0.3s ease;
+    min-height: 40px;
+    max-height: 120px;
 }
 
 textarea:focus {
-    border-radius: 1rem !important;
+    border-radius: 0.75rem !important;
 }
 
-/* Style pour les avatars */
+/* Style pour les avatars avec effet de profondeur */
 .w-10.h-10, .w-8.h-8 {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Effets d'ombre modernes */
-.shadow-sm {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
-
-.rounded-xl {
-    border-radius: 0.75rem;
+.shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Transition fluide */
 .transition-colors {
     transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
-}
-
-/* Responsive design amélioré */
-@media (max-width: 1024px) {
-    .container {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    
-    .flex-col.lg\:flex-row {
-        flex-direction: column;
-    }
-    
-    .lg\:w-1\/3, .lg\:w-2\/3 {
-        width: 100%;
-    }
 }
 
 /* Scrollbar personnalisée */
@@ -302,38 +382,92 @@ textarea:focus {
 .dark ::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
 }
+
+/* Style pour les boutons d'action des posts */
+button:hover {
+    transform: translateY(-1px);
+}
+
+/* Style pour les champs de commentaire avec placeholder */
+.comment-field::placeholder {
+    color: #9ca3af;
+}
+
+.dark .comment-field::placeholder {
+    color: #6b7280;
+}
+
+/* Style pour les icônes alphabet */
+.w-6.h-6, .w-5.h-5 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
 </style>
 @endpush
 
 @push('scripts')
 <script>
-// Animation pour le textarea de publication et gestion dynamique du bouton Poster
 document.addEventListener('DOMContentLoaded', function() {
-    const textarea = document.querySelector('textarea[name="content"]');
-    const submitBtn = document.querySelector('form[action*="wall.post"] button[type="submit"]');
-    if (textarea && submitBtn) {
-        // Initialiser l'état du bouton
-        submitBtn.disabled = textarea.value.trim().length === 0;
-        textarea.addEventListener('input', function() {
-            // Ajuster la hauteur automatiquement
+    // Gestion du textarea de publication principale
+    const mainTextarea = document.querySelector('textarea[name="content"]');
+    const mainSubmitBtn = document.querySelector('form[action*="wall.post"] button[type="submit"]');
+    
+    if (mainTextarea && mainSubmitBtn) {
+        mainSubmitBtn.disabled = mainTextarea.value.trim().length === 0;
+        
+        mainTextarea.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
-            // Activer/désactiver le bouton
-            submitBtn.disabled = this.value.trim().length === 0;
+            mainSubmitBtn.disabled = this.value.trim().length === 0;
         });
     }
+    
+    // Gestion des champs de commentaire
+    const commentFields = document.querySelectorAll('.comment-field');
+    const commentSubmits = document.querySelectorAll('.comment-submit');
+    const commentTriggers = document.querySelectorAll('.comment-trigger');
+    
+    commentFields.forEach(field => {
+        const postId = field.dataset.postId;
+        const submitBtn = document.querySelector(`.comment-submit[data-post-id="${postId}"]`);
+        
+        if (submitBtn) {
+            submitBtn.disabled = field.value.trim().length === 0;
+            
+            field.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                submitBtn.disabled = this.value.trim().length === 0;
+            });
+        }
+    });
+    
+    // Focus sur le champ de commentaire quand on clique sur "Commenter"
+    commentTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const commentField = document.querySelector(`.comment-field[data-post-id="${postId}"]`);
+            if (commentField) {
+                commentField.focus();
+            }
+        });
+    });
+    
     // Animation pour les nouveaux posts
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.addedNodes.length) {
                 mutation.addedNodes.forEach(function(node) {
-                    if (node.nodeType === 1) { // Element node
+                    if (node.nodeType === 1) {
                         node.style.animation = 'fadeInUp 0.5s ease-out';
                     }
                 });
             }
         });
     });
+    
     observer.observe(document.body, {
         childList: true,
         subtree: true

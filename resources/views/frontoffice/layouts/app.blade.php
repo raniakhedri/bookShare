@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <title>@yield('title', 'Bookly - Bookstore eCommerce')</title>
     <meta charset="utf-8">
@@ -13,15 +14,89 @@
         content="@yield('description', 'Bookly is Bookstore eCommerce TailwindCSS Website Template')">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <!-- Tailwind CSS via CDN (for development) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#F86D72',
+                        'primary-dark': '#e55a5f'
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
 
-    <!-- Laravel Mix Assets -->
-    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
-
-    <!-- Vendor Styles (after app.css for overrides) -->
+    <!-- Vendor Styles (load first) -->
     <link rel="stylesheet" type="text/css" href="{{ asset('template/css/vendor.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('template/css/style.css') }}">
+
+    <!-- Custom overrides (minimal, only for specific components) -->
+    <style>
+        /* Custom primary color variable for compatibility */
+        :root {
+            --primary-color: #F86D72;
+        }
+
+        .text-primary {
+            color: #F86D72 !important;
+        }
+
+        .bg-primary {
+            background-color: #F86D72 !important;
+        }
+
+        .border-primary {
+            border-color: #F86D72 !important;
+        }
+
+        .hover\:bg-primary:hover {
+            background-color: #F86D72 !important;
+        }
+
+        .hover\:text-primary:hover {
+            color: #F86D72 !important;
+        }
+
+        /* Ensure Tailwind utilities have priority */
+        .container {
+            width: 100% !important;
+        }
+
+        @media (min-width: 640px) {
+            .container {
+                max-width: 640px !important;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px !important;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1024px !important;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .container {
+                max-width: 1280px !important;
+            }
+        }
+
+        @media (min-width: 1536px) {
+            .container {
+                max-width: 1536px !important;
+            }
+        }
+    </style>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,8 +111,6 @@
     @include('frontoffice.layouts.partials.svg-icons')
 
     @include('frontoffice.layouts.partials.preloader')
-
-    @include('frontoffice.layouts.partials.search-popup')
 
     @include('frontoffice.layouts.partials.header')
 

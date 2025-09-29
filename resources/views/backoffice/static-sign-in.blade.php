@@ -1,6 +1,29 @@
 @extends('backoffice.layouts.user_type.auth')
 
 @section('content')
+  <style>
+    :root {
+      --primary-color: #F86D72;
+      --primary-dark: #e55a5f;
+    }
+
+    .bg-gradient-primary {
+      background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+    }
+
+    .text-primary-custom {
+      color: #F86D72 !important;
+    }
+
+    .text-gradient-primary {
+      background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+      color: transparent !important;
+      display: inline-block;
+    }
+  </style>
 
   <main class="main-content  mt-0">
     <section>
@@ -10,21 +33,23 @@
             <div class="col-xl-4 col-lg-5 col-md-6 d-flex flex-column mx-auto">
               <div class="card card-plain mt-8">
                 <div class="card-header pb-0 text-left bg-transparent">
-                  <h3 class="font-weight-bolder text-info text-gradient">Welcome back</h3>
+                  <h3 class="font-weight-bolder text-gradient-primary">Welcome to BookShare</h3>
                   <p class="mb-0">Enter your email and password to sign in</p>
                 </div>
                 <div class="card-body">
                   <form role="form">
                     <label>Email</label>
                     <div class="mb-3">
-                      <input type="email" class="form-control" placeholder="Email" aria-label="Email" aria-describedby="email-addon">
+                      <input type="email" class="form-control" placeholder="Email" aria-label="Email"
+                        aria-describedby="email-addon">
                       @error('email')
                         <p class="text-danger text-xs mt-2">{{ $message }}</p>
                       @enderror
                     </div>
                     <label>Password</label>
                     <div class="mb-3">
-                      <input type="email" class="form-control" placeholder="Password" aria-label="Password" aria-describedby="password-addon">
+                      <input type="password" class="form-control" placeholder="Password" aria-label="Password"
+                        aria-describedby="password-addon">
                       @error('password')
                         <p class="text-danger text-xs mt-2">{{ $message }}</p>
                       @enderror
@@ -34,21 +59,22 @@
                       <label class="form-check-label" for="rememberMe">Remember me</label>
                     </div>
                     <div class="text-center">
-                      <button type="button" class="btn bg-gradient-info w-100 mt-4 mb-0">Sign in</button>
+                      <button type="button" class="btn bg-gradient-primary w-100 mt-4 mb-0">Sign in</button>
                     </div>
                   </form>
                 </div>
                 <div class="card-footer text-center pt-0 px-lg-2 px-1">
                   <p class="mb-4 text-sm mx-auto">
                     Don't have an account?
-                    <a href="javascript:;" class="text-info text-gradient font-weight-bold">Sign up</a>
+                    <a href="javascript:;" class="text-primary-custom font-weight-bold">Sign up</a>
                   </p>
                 </div>
               </div>
             </div>
             <div class="col-md-6">
               <div class="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">
-                <div class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6" style="background-image:url('../assets/img/curved-images/curved6.jpg')"></div>
+                <div class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6"
+                  style="background-image:url('../assets/img/curved-images/curved6.jpg')"></div>
               </div>
             </div>
           </div>

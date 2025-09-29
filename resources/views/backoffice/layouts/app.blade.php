@@ -63,6 +63,136 @@
       height: auto !important;
       max-height: none !important;
     }
+
+    /* BookShare Primary Color Override */
+    :root {
+      --bs-primary: #F86D72;
+      --bs-primary-rgb: 248, 109, 114;
+    }
+
+    /* Override Soft UI Dashboard primary colors */
+    .bg-gradient-primary {
+      background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+    }
+
+    .bg-primary {
+      background-color: #F86D72 !important;
+    }
+
+    .text-primary {
+      color: #F86D72 !important;
+    }
+
+    .border-primary {
+      border-color: #F86D72 !important;
+    }
+
+    .btn-primary {
+      background-color: #F86D72 !important;
+      border-color: #F86D72 !important;
+    }
+
+    .btn-primary:hover {
+      background-color: #e55a5f !important;
+      border-color: #e55a5f !important;
+    }
+
+    .btn-outline-primary {
+      color: #F86D72 !important;
+      border-color: #F86D72 !important;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: #F86D72 !important;
+      border-color: #F86D72 !important;
+    }
+
+    /* Navigation colors */
+    .navbar-brand .navbar-brand-img,
+    .navbar-brand .navbar-brand-img:hover {
+      filter: hue-rotate(340deg) saturate(1.2);
+    }
+
+    /* Sidebar active item */
+    .sidenav .navbar-nav .nav-item .nav-link.active {
+      background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+    }
+
+    /* Chart and accent colors */
+    .bg-gradient-info {
+      background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+    }
+
+    .bg-info {
+      background-color: #F86D72 !important;
+    }
+
+    .text-info {
+      color: #F86D72 !important;
+    }
+
+    .text-info.text-gradient {
+      background: linear-gradient(310deg, #F86D72, #FF8A8E);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .border-info {
+      border-color: #F86D72 !important;
+    }
+
+    .badge.bg-info {
+      background-color: #F86D72 !important;
+      color: white !important;
+    }
+
+    .badge.bg-gradient-info {
+      background: linear-gradient(310deg, #F86D72, #FF8A8E) !important;
+      color: white !important;
+    }
+
+    /* Link colors */
+    a {
+      color: #F86D72;
+    }
+
+    a:hover {
+      color: #e55a5f;
+    }
+
+    /* Form focus colors */
+    .form-control:focus {
+      border-color: #F86D72;
+      box-shadow: 0 0 0 0.2rem rgba(248, 109, 114, 0.25);
+    }
+
+    /* Progress bars */
+    .progress-bar {
+      background-color: #F86D72 !important;
+    }
+
+    /* Badges */
+    .badge-primary {
+      background-color: #F86D72 !important;
+    }
+
+    /* Alerts */
+    .alert-primary {
+      background-color: rgba(248, 109, 114, 0.1) !important;
+      border-color: #F86D72 !important;
+      color: #d63447 !important;
+    }
+
+    /* Custom gradient text */
+    .text-gradient-primary {
+      background: linear-gradient(87deg, #F86D72 0, #e55a5f 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+      color: transparent !important;
+      display: inline-block;
+    }
   </style>
 </head>
 
@@ -77,7 +207,8 @@
 
   @if(session()->has('success'))
     <div x-data="{ show: true}" x-init="setTimeout(() => show = false, 4000)" x-show="show"
-      style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; min-width: 250px;" class="bg-success text-white rounded shadow text-sm py-2 px-4 animate__animated animate__fadeInUp">
+      style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; min-width: 250px;"
+      class="bg-success text-white rounded shadow text-sm py-2 px-4 animate__animated animate__fadeInUp">
       <p class="m-0">{{ session('success')}}</p>
     </div>
   @endif
