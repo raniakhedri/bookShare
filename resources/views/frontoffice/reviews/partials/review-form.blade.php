@@ -1,5 +1,5 @@
 <!-- Review Form Partial - can be included in both create and edit views -->
-
+<meta name="csrf-token" content="{{ csrf_token() }}"> 
 <!-- Overall Rating (Required) -->
 <div class="mb-6">
     <label class="block text-lg font-medium text-gray-900 mb-3">

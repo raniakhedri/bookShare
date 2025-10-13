@@ -1,4 +1,4 @@
-@extends('frontoffice.  layouts.app')
+@extends('frontoffice.layouts.app')
 
 @section('title', 'My Reviews')
 

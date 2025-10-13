@@ -1,4 +1,5 @@
 <!-- Review Discussions Partial -->
+ <meta name="csrf-token" content="{{ csrf_token() }}"> 
 @if($discussions && $discussions->count() > 0)
     <div class="space-y-4">
         @foreach($discussions as $discussion)

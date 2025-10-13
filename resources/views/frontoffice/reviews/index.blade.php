@@ -80,7 +80,7 @@
     <!-- Reviews List -->
     <div id="reviewsList" class="space-y-6">
         @forelse($reviews as $review)
-            @include('frontoffice.reviews.partials.review-card', ['review' => $review])
+            @include('reviews.partials.review-card', ['review' => $review])
         @empty
             <div class="text-center py-12">
                 <div class="text-gray-400 text-6xl mb-4">📚</div>

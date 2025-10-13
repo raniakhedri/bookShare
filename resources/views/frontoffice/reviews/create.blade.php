@@ -20,7 +20,8 @@
         <!-- Review Form -->
         <div class="bg-white rounded-lg shadow-sm border p-8">
             <form action="{{ route('reviews.store', $book->id) }}" method="POST" enctype="multipart/form-data" id="reviewForm">
-                @csrf
+                    @csrf
+    <input type="hidden" name="redirect_to" value="{{ url()->previous() }}">
     <!-- Add this error display section -->
     @if ($errors->any())
         <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">

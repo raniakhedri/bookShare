@@ -37,4 +37,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('interactions/{interaction}/report', [ReviewInteractionController::class, 'report']);
     Route::get('my-interactions', [ReviewInteractionController::class, 'myInteractions']);
     Route::get('my-bookmarks', [ReviewInteractionController::class, 'bookmarks']);
-}); 
+});

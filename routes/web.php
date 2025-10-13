@@ -1,47 +1,141 @@
+
+
 <?php
 
+use App\Http\Controllers\Backoffice\ChangePasswordController;
+use App\Http\Controllers\Backoffice\InfoUserController;
+use App\Http\Controllers\Backoffice\RegisterController;
+use App\Http\Controllers\Backoffice\ResetController;
+use App\Http\Controllers\Backoffice\SessionsController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
-<<<<<<< Updated upstream
-=======
 use App\Http\Controllers\Backoffice\BookController;
 use App\Http\Controllers\Frontoffice\JournalController;
 use App\Http\Controllers\Frontoffice\NoteController;
 use App\Http\Controllers\Frontoffice\ReviewController;
 use App\Http\Controllers\Frontoffice\ReviewInteractionController;
 
->>>>>>> Stashed changes
 
-// Home page
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+// FRONTOFFICE ROUTES (BookShare - Public User Interface)
+// Redirect root to admin login
 Route::get('/', function () {
-    return view('home');
-})->name('home');
+	return redirect()->route('admin.login');
+});
 
-// New simplified navigation pages
+
 Route::get('/book', function () {
-    return view('book');
+	$books = \App\Models\Book::with('category')->paginate(12);
+	$categories = \App\Models\Category::all();
+	return view('frontoffice.book', compact('books', 'categories'));
 })->name('book');
 
+// Détail d'un livre avec lecture PDF
+Route::get('/livre/{id}', function ($id) {
+	$book = \App\Models\Book::with('category')->findOrFail($id);
+	return view('frontoffice.book_show', compact('book'));
+})->name('frontoffice.book.show');
+
+Route::get('/groups/{id}/wall', function ($id) {
+	$group = \App\Models\Group::with(['users', 'creator', 'posts.user', 'posts.comments.user'])->findOrFail($id);
+	$user = auth()->user();
+	$memberCount = $group->users->count();
+	$recentMembers = $group->users->sortByDesc(function($user) { return $user->pivot->created_at ?? $user->created_at; })->take(8);
+	$posts = $group->posts()->latest()->get();
+	return view('frontoffice.group_wall', compact('group', 'memberCount', 'recentMembers', 'posts'));
+})->name('frontoffice.group.wall');
+
+// // Accept or refuse group member and redirect to groups page
+// Route::get('/admin/groups/accept/{groupId}/{userId}', function ($groupId, $userId) {
+// 	$group = \App\Models\Group::findOrFail($groupId);
+// 	$user = \App\Models\User::findOrFail($userId);
+// 	$group->users()->updateExistingPivot($userId, ['status' => 'accepted']);
+// 	return redirect()->route('admin.groups')->with('success', 'User accepted into group!');
+// });
+
+
+// POST routes for accepting/refusing group members
+Route::post('/admin/groups/accept/{groupId}/{userId}', function ($groupId, $userId) {
+	$group = \App\Models\Group::findOrFail($groupId);
+	$user = \App\Models\User::findOrFail($userId);
+	$group->users()->updateExistingPivot($userId, ['status' => 'accepted']);
+	return redirect()->route('admin.groups')->with('success', 'User accepted into group!');
+});
+
+Route::post('/admin/groups/refuse/{groupId}/{userId}', function ($groupId, $userId) {
+	$group = \App\Models\Group::findOrFail($groupId);
+	$user = \App\Models\User::findOrFail($userId);
+	$group->users()->updateExistingPivot($userId, ['status' => 'refused']);
+	return redirect()->route('admin.groups')->with('success', 'User refused from group!');
+});
+
+Route::get('/admin/groups/refuse/{groupId}/{userId}', function ($groupId, $userId) {
+	$group = \App\Models\Group::findOrFail($groupId);
+	$user = \App\Models\User::findOrFail($userId);
+	$group->users()->updateExistingPivot($userId, ['status' => 'refused']);
+	return redirect()->route('admin.groups')->with('success', 'User refused from group!');
+});
+
+Route::post('/groups/{id}/join', function ($id) {
+	// Example logic: attach user to group with 'pending' status
+	$group = \App\Models\Group::findOrFail($id);
+	if (auth()->check()) {
+		$group->users()->syncWithoutDetaching([
+			auth()->id() => ['status' => 'pending']
+		]);
+		return redirect()->back()->with('success', 'Join request sent!');
+	}
+	return redirect()->route('login');
+})->name('groups.join');
+
+Route::post('/groups/{id}/wall', function ($id, Request $request) {
+	// Handle post creation logic here
+	$request->validate([
+		'content' => 'required|string|max:1000',
+	]);
+	$group = \App\Models\Group::findOrFail($id);
+	$user = auth()->user();
+	if (!$user) {
+		return redirect()->route('login');
+	}
+	\App\Models\Post::create([
+		'group_id' => $group->id,
+		'user_id' => $user->id,
+		'content' => $request->input('content'),
+	]);
+	return redirect()->route('frontoffice.group.wall', $id)->with('success', 'Post created successfully!');
+})->name('frontoffice.group.wall.post');
 Route::get('/notes', function () {
-    return view('notes');
+	return view('frontoffice.notes');
 })->name('notes');
 
 Route::get('/groups', function () {
-    return view('groups');
+	$groups = \App\Models\Group::with('users')->get();
+	return view('frontoffice.groups', compact('groups'));
 })->name('groups');
 
 Route::get('/marketplace', function () {
-    return view('marketplace');
+	return view('frontoffice.marketplace');
 })->name('marketplace');
 
 Route::get('/blog', function () {
-    return view('blog');
+	return view('frontoffice.blog');
 })->name('blog');
 
 Route::get('/community', function () {
-    return view('community');
+	return view('frontoffice.community');
 })->name('community');
-<<<<<<< Updated upstream
-=======
 
 // Livres
 Route::get('/books', [BookController::class, 'index'])->name('books.index');
@@ -273,6 +367,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'guest'], function () {
 	Route::post('/reset-password', [ChangePasswordController::class, 'changePassword'])->name('password.update');
 });
 
+// Review routes
 // Public routes - Anyone can view
 Route::get('/books/{book}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
 Route::get('/reviews/{review}', [ReviewController::class, 'show'])->name('reviews.show');
@@ -299,4 +394,3 @@ Route::middleware('auth')->group(function () {
     Route::delete('/interactions/{interaction}', [ReviewInteractionController::class, 'destroy'])->name('interactions.destroy');
     Route::post('/interactions/{interaction}/report', [ReviewInteractionController::class, 'report'])->name('interactions.report');
 });
->>>>>>> Stashed changes

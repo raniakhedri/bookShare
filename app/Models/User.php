@@ -21,7 +21,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
+
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_user')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -45,8 +53,6 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-<<<<<<< Updated upstream
-=======
 
     public function journals()
     {
@@ -61,5 +67,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class);
     }
->>>>>>> Stashed changes
 }

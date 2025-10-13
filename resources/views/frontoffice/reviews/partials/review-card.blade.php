@@ -1,3 +1,4 @@
+<meta name="csrf-token" content="{{ csrf_token() }}"> 
 <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition duration-200" data-review-id="{{ $review->review_id }}">
     <!-- Review Header -->
     <div class="flex items-start justify-between mb-4">

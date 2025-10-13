@@ -132,8 +132,9 @@ public function create($bookId)
 
     $review = Review::create($reviewData);
 
-    return redirect()->back()
-                    ->with('success', 'Your review has been added successfully!');
+    // Redirect back to the page user came from
+    return redirect($request->input('redirect_to', route('books.show', $bookId)))
+           ->with('success', 'Your review has been published successfully!');
 }
 
     /**
