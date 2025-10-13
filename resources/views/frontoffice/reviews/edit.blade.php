@@ -53,16 +53,41 @@
                     </div>
                 @endif
 
-                <!-- Overall Rating (Required) -->
-                <div class="mb-6">
-                    <label class="block text-lg font-medium text-gray-900 mb-3">
-                        Overall Rating <span class="text-red-500">*                        </span>
-                    </div>
-                    <input type="hidden" name="overall_rating" id="overall_rating" value="{{ old('overall_rating', $review->overall_rating) }}">
-                    @error('overall_rating')
-                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+<!-- Overall Rating (Required) -->
+<div class="mb-6">
+    <label class="block text-lg font-medium text-gray-900 mb-3">
+        Overall Rating <span class="text-red-500">*</span>
+    </label>
+
+    <!-- Star Buttons -->
+    <div class="flex items-center space-x-2">
+        @php $ratingTexts = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent']; @endphp
+        @for($i = 1; $i <= 5; $i++)
+            <button type="button"
+                    onclick="setRating('overall_rating', {{ $i }})"
+                    class="star-button {{ $i <= old('overall_rating', $review->overall_rating) ? 'text-yellow-400' : 'text-gray-300' }} hover:text-yellow-400 transition duration-200"
+                    data-rating="{{ $i }}"
+                    data-field="overall_rating">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+            </button>
+        @endfor
+
+        <!-- Rating Text -->
+        <span id="overall_rating_text" class="ml-3 text-gray-600 font-medium">
+            {{ $ratingTexts[old('overall_rating', $review->overall_rating)] ?? 'Click to rate' }}
+        </span>
+    </div>
+
+    <!-- Hidden Input -->
+    <input type="hidden" name="overall_rating" id="overall_rating" value="{{ old('overall_rating', $review->overall_rating) }}">
+
+    @error('overall_rating')
+        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+    @enderror
+</div>
+
 
                 <!-- Additional Ratings -->
                 <div class="grid md:grid-cols-2 gap-6 mb-6">
@@ -265,7 +290,7 @@
                     </div>
                     
                     <button type="submit" 
-                            class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                            class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
                         Update Review
                     </button>
                 </div>

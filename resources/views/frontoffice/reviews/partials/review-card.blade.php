@@ -14,6 +14,14 @@
             <div class="flex-1">
                 <div class="flex items-center space-x-2 mb-1">
                     <h3 class="font-semibold text-gray-900">{{ $review->user->name }}</h3>
+@if($review->sentiment)
+    <span class="ml-2 px-2 py-1 rounded text-xs font-semibold
+        {{ $review->sentiment == 'positive' ? 'bg-green-100 text-green-800' : ($review->sentiment == 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
+        {{ ucfirst($review->sentiment) }}
+    </span>
+@endif
+
+
                     <span class="text-gray-400">•</span>
                     <time class="text-sm text-gray-500" datetime="{{ $review->created_at->toISOString() }}">
                         {{ $review->created_at->diffForHumans() }}
@@ -194,7 +202,7 @@ function renderDiscussions(discussions) {
                 <p class="text-sm text-gray-700">${discussion.content}</p>
             </div>
         `;
-    });
+    }); 
     html += '</div>';
     return html;
 }
