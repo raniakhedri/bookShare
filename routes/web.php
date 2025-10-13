@@ -17,6 +17,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backoffice\BookController;
 use App\Http\Controllers\Frontoffice\JournalController;
 use App\Http\Controllers\Frontoffice\NoteController;
+use App\Http\Controllers\Frontoffice\CommentJournalController;
+use App\Http\Controllers\Frontoffice\QuizController;
+use Illuminate\Support\Facades\Mail;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -187,6 +191,9 @@ Route::get('/books', [BookController::class, 'index'])->name('books.index');
 Route::get('/books/{book}/add-to-journal', [BookController::class, 'addToJournalForm'])->name('books.add-to-journal');
 Route::post('/books/{book}/store-in-journal', [BookController::class, 'storeInJournal'])->name('books.store-in-journal');
 Route::get('/journals/{journal}/books/{book}', [BookController::class, 'show'])->name('books.show');
+// === JOURNAUX SECRET : Déverrouillage avec mot de passe ===
+Route::get('/journals/{journal}/unlock', [JournalController::class, 'showUnlockForm'])->name('journals.unlock.form');
+Route::post('/journals/{journal}/unlockk', [JournalController::class, 'unlockAttempt'])->name('journals.unlock.attempt');
 
 // Journaux
 Route::get('/journals', [JournalController::class, 'index'])->name('journals.index');
@@ -199,10 +206,37 @@ Route::get('/journals/{journal}/archived', [JournalController::class, 'showArchi
 Route::patch('/journals/{journal}/books/{book}/unarchive', [JournalController::class, 'unarchiveBook'])->name('journals.unarchive-book');
 Route::delete('/journals/{journal}/books/{book}/detach', [JournalController::class, 'detachBook'])->name('journals.detach-book');
 Route::patch('/journals/{journal}/books/{book}/archive', [JournalController::class, 'archiveBook'])->name('journals.archive-book'); 
+Route::get('/journals/{journal}/book/{book}', [JournalController::class, 'showBook'])
+     ->name('journals.showBook');
+Route::delete('/journals/{journal}', [JournalController::class, 'destroy'])->name('journals.destroy');
+Route::post('/journals/{journal}/lock', [JournalController::class, 'lock'])->name('journals.lock');
+Route::post('/journals/{journal}/unlock', [JournalController::class, 'unlock'])->name('journals.unlock');
+// Page pour afficher les quiz du journal
+Route::get('/journals/{id}/quizzes', [QuizController::class, 'showQuizzes'])->name('journals.quizzes');
+Route::post('/quizzes/{id}/answer', [QuizController::class, 'submitAnswer'])->name('quizzes.answer');
+Route::middleware(['auth'])->group(function () {
+// Pour les participants : voir les quiz du journal
+Route::get('/journals/{journal}/participant-quizzes', [QuizController::class, 'showForParticipant'])->name('journals.participantQuizzes');
+});
+Route::get('/journals/{id}/quizzess', [JournalController::class, 'participantQuizzes'])->name('journals.participantQuizzes');
 
+// Génération du quiz (POST)
+Route::post('/journals/{id}/generate-quiz', [QuizController::class, 'generateQuiz'])->name('journals.generateQuiz');
+// Partage de journal
+Route::post('/journals/{journal}/share', [JournalController::class, 'share'])->name('journals.share');
+Route::delete('/journals/{journal}/unshare/{user}', [JournalController::class, 'unshare'])->name('journals.unshare');
+Route::delete('/journals/{journal}/leave', [JournalController::class, 'leave'])->name('journals.leave');
+// Notes et commentaires
+Route::post('/journals/{journal}/books/{book}/notes', [NoteController::class, 'store'])->name('notes.store');
+Route::post('/notes/{note}/comments', [CommentJournalController::class, 'store'])->name('comments.store');
 // Notes
-Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+Route::post('/journals/{journal}/books/{book}/notes', [NoteController::class, 'store'])->name('notes.store');
+Route::put('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
 Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
+
+// Commentaires
+Route::post('/notes/{note}/comments', [CommentJournalController::class, 'store'])->name('comments.store');
+Route::delete('/comments/{comment}', [CommentJournalController::class, 'destroy'])->name('comments.destroy');
 
 
 // Reviews Routes
