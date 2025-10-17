@@ -31,11 +31,11 @@ return [
     ],
 
     'openai' => [
-        'api_key' => env('OPENAI_API_KEY', 'A1PlifrWYCAjPm6jxhhHI6Ht5agRx5YJwLYMrkKe0MGQnLmhe31oJQQJ99BDACfhMk5XJ3w3AAAAACOGe69e'),
-        'endpoint' => env('OPENAI_ENDPOINT', 'https://rania-m920fpt8-swedencentral.cognitiveservices.azure.com/openai/deployments/gpt-4/chat/completions'),
-        'api_version' => env('OPENAI_API_VERSION', '2025-01-01-preview'),
-        'dalle_endpoint' => env('DALLE_ENDPOINT', 'https://rania-m920fpt8-swedencentral.cognitiveservices.azure.com/openai/deployments/dall-e-3/images/generations'),
-        'dalle_api_version' => env('DALLE_API_VERSION', '2024-02-01'),
+        'api_key' => env('OPENAI_API_KEY'),
+        'endpoint' => env('OPENAI_ENDPOINT'),
+        'api_version' => env('OPENAI_API_VERSION'),
+        'dalle_endpoint' => env('DALLE_ENDPOINT'),
+        'dalle_api_version' => env('DALLE_API_VERSION'),
     ],
 
 ];

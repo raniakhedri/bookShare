@@ -234,34 +234,34 @@ class MarketBookWebController extends Controller
 
         try {
             $prompt = "Create a professional book cover design for the book titled '{$request->title}' by {$request->author}";
-            
+
             if ($request->description) {
                 $prompt .= ". The book is about: " . substr($request->description, 0, 200);
             }
-            
+
             $prompt .= ". Design should be eye-catching, professional, and suitable for a book marketplace. Include the title and author name in an attractive typography. The cover should be visually appealing and convey the book's essence.";
 
             $response = Http::withHeaders([
                 'api-key' => config('services.openai.api_key'),
                 'Content-Type' => 'application/json',
             ])->post(config('services.openai.dalle_endpoint') . '?api-version=' . config('services.openai.dalle_api_version'), [
-                'prompt' => $prompt,
-                'n' => 1,
-                'size' => '1024x1024',
-                'quality' => 'standard',
-                'style' => 'vivid'
-            ]);
+                        'prompt' => $prompt,
+                        'n' => 1,
+                        'size' => '1024x1024',
+                        'quality' => 'standard',
+                        'style' => 'vivid'
+                    ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 $imageUrl = $data['data'][0]['url'] ?? null;
-                
+
                 if ($imageUrl) {
                     // Download the image and store it
                     $imageContent = Http::get($imageUrl)->body();
                     $filename = 'generated-covers/' . uniqid() . '.png';
                     Storage::disk('public')->put($filename, $imageContent);
-                    
+
                     return response()->json([
                         'success' => true,
                         'image_url' => asset('storage/' . $filename),
