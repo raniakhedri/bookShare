@@ -2,78 +2,55 @@
 
 namespace App\Http\Controllers\Frontoffice;
 
-use App\Http\Controllers\Controller;
-use App\Models\BookNote;
+use App\Models\Note;
 use App\Models\Journal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller; 
+
 
 class NoteController extends Controller
 {
-    /**
-     * Ajouter une note à un livre dans un journal
-     */
-    public function store(Request $request, $journalId, $bookId)
-    {
-        // Valider les données
-        $request->validate([
-            'content' => 'required|string|max:2000',
-        ]);
+    public function store(Request $request)
+{
+    $request->validate([
+        'journal_id' => 'required|exists:journals,id,user_id,' . Auth::id(),
+        'book_id' => 'required|exists:books,id',
+        'excerpt' => 'required|string|max:1000',
+        'content' => 'required|string|max:2000',
+    ]);
 
-        // Vérifier que le journal existe et que l'utilisateur y a accès
-        $journal = Journal::findOrFail($journalId);
-        
-        if ($journal->user_id !== Auth::id() && !$journal->isSharedWith(Auth::user())) {
-            abort(403, 'You do not have permission to add notes to this journal.');
-        }
-
-        // Créer la note
-        BookNote::create([
-            'journal_id' => $journalId,
-            'book_id' => $bookId,
-            'user_id' => Auth::id(),
-            'content' => $request->content,
-        ]);
-
-        return back()->with('success', 'Note added successfully.');
+    $journal = Journal::findOrFail($request->journal_id);
+    if (!$journal->books()->where('book_id', $request->book_id)->exists()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Ce livre n’appartient pas à ce journal.'
+        ], 400);
     }
 
-    /**
-     * Mettre à jour une note (optionnel)
-     */
-    public function update(Request $request, $noteId)
+    Note::create([
+        'user_id' => Auth::id(),
+        'journal_id' => $request->journal_id,
+        'book_id' => $request->book_id,
+        'excerpt' => $request->excerpt,
+        'content' => $request->content,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Note ajoutée avec succès !'
+    ]);
+}
+
+    public function destroy(Note $note)
     {
-        $request->validate([
-            'content' => 'required|string|max:2000',
-        ]);
-
-        $note = BookNote::findOrFail($noteId);
-
-        // Seul l'auteur peut modifier
+        // Vérifier que la note appartient à l'utilisateur courant
         if ($note->user_id !== Auth::id()) {
-            abort(403, 'You can only edit your own notes.');
-        }
-
-        $note->update(['content' => $request->content]);
-
-        return back()->with('success', 'Note updated.');
-    }
-
-    /**
-     * Supprimer une note
-     */
-    public function destroy($noteId)
-    {
-        $note = BookNote::findOrFail($noteId);
-
-        // Seul l'auteur ou le propriétaire du journal peut supprimer
-        $journal = $note->journal;
-        if ($note->user_id !== Auth::id() && $journal->user_id !== Auth::id()) {
-            abort(403, 'You do not have permission to delete this note.');
+            abort(403);
         }
 
         $note->delete();
 
-        return back()->with('success', 'Note deleted.');
+        return back()->with('success', 'Note supprimée.');
     }
 }

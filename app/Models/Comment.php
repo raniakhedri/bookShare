@@ -25,4 +25,46 @@ class Comment extends Model
     {
         return $this->belongsTo(Post::class);
     }
+
+    /**
+     * Relation avec les réactions
+     */
+    public function reactions()
+    {
+        return $this->hasMany(CommentReaction::class);
+    }
+
+    /**
+     * Obtenir les réactions groupées par type
+     */
+    public function getReactionsByTypeAttribute()
+    {
+        return $this->reactions()
+            ->selectRaw('reaction_type, COUNT(*) as count')
+            ->groupBy('reaction_type')
+            ->pluck('count', 'reaction_type')
+            ->toArray();
+    }
+
+    /**
+     * Obtenir le nombre total de réactions
+     */
+    public function getTotalReactionsAttribute()
+    {
+        return $this->reactions()->count();
+    }
+
+    /**
+     * Vérifier si l'utilisateur connecté a réagi
+     */
+    public function getUserReactionAttribute()
+    {
+        if (!auth()->check()) {
+            return null;
+        }
+
+        return $this->reactions()
+            ->where('user_id', auth()->id())
+            ->first();
+    }
 }

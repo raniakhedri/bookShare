@@ -17,11 +17,40 @@ class GroupPostController extends Controller
             abort(403, 'Accès réservé aux membres du groupe');
         }
         $posts = \App\Models\Post::where('group_id', $group_id)
-            ->with(['user', 'comments.user'])
+            ->with([
+                'user', 
+                'comments.user', 
+                'reactions.user',
+                'comments.reactions.user'
+            ])
             ->latest()->get();
+            
+        // Ajouter la réaction de l'utilisateur connecté pour chaque post et commentaire
+        foreach ($posts as $post) {
+            $post->user_reaction = $post->reactions->where('user_id', auth()->id())->first();
+            foreach ($post->comments as $comment) {
+                $comment->user_reaction = $comment->reactions->where('user_id', auth()->id())->first();
+            }
+        }
     $memberCount = $group->users()->wherePivot('status', 'accepted')->count();
     $recentMembers = $group->users()->wherePivot('status', 'accepted')->orderByDesc('group_user.created_at')->take(8)->get();
-    return view('frontoffice.group_wall', compact('group', 'posts', 'memberCount', 'recentMembers'));
+    
+    // Récupérer les données des badges
+    $topContributors = $group->getTopContributors(3);
+    $recentBadges = $group->badges()
+                         ->active()
+                         ->with('user:id,name')
+                         ->orderBy('earned_date', 'desc')
+                         ->limit(5)
+                         ->get();
+                         
+    // Badges de l'utilisateur connecté
+    $userBadges = auth()->user()->getBadgesInGroup($group_id);
+    
+    // Évaluer automatiquement les badges pour l'utilisateur connecté
+    \App\Models\GroupMemberBadge::evaluateAndAwardBadges($group_id, auth()->id());
+    
+    return view('frontoffice.group_wall', compact('group', 'posts', 'memberCount', 'recentMembers', 'topContributors', 'recentBadges', 'userBadges'));
     }
 
     // Publier un nouveau post

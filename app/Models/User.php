@@ -6,11 +6,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -105,9 +106,124 @@ class User extends Authenticatable
         return $this->hasMany(Review::class);
     }
 
-    public function journals()
-{
-    return $this->hasMany(Journal::class);
-}
+    /**
+     * Get the user's favorite books.
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
 
+    /**
+     * Get the books that the user has favorited.
+     */
+    public function favoritedBooks()
+    {
+        return $this->belongsToMany(Book::class, 'favorites')->withTimestamps();
+    }
+
+    /**
+     * Get all user interactions for AI recommendations.
+     */
+    public function interactions()
+    {
+        return $this->hasMany(UserInteraction::class);
+    }
+
+    /**
+     * Get user preferences for AI recommendations.
+     */
+    public function preferences()
+    {
+        return $this->hasMany(UserPreference::class);
+    }
+
+    /**
+     * Get all badges earned by this user in groups.
+     */
+    public function groupBadges()
+    {
+        return $this->hasMany(GroupMemberBadge::class);
+    }
+
+    /**
+     * Get badges for a specific group.
+     */
+    public function getBadgesInGroup($groupId)
+    {
+        return $this->groupBadges()
+                   ->where('group_id', $groupId)
+                   ->active()
+                   ->orderBy('points_earned', 'desc')
+                   ->get();
+    }
+
+    /**
+     * Get total points earned from group badges.
+     */
+    public function getTotalBadgePointsAttribute()
+    {
+        return $this->groupBadges()
+                   ->active()
+                   ->sum('points_earned');
+    }
+
+    /**
+     * Get events created by this user.
+     */
+    public function createdEvents()
+    {
+        return $this->hasMany(GroupEvent::class, 'creator_id');
+    }
+
+    /**
+     * Get event registrations for this user.
+     */
+    public function eventParticipations()
+    {
+        return $this->hasMany(EventParticipant::class);
+    }
+
+    /**
+     * Get events this user is registered for.
+     */
+    public function registeredEvents()
+    {
+        return $this->belongsToMany(GroupEvent::class, 'event_participants', 'user_id', 'event_id')
+                   ->withPivot(['status', 'registered_at', 'approved_at'])
+                   ->withTimestamps();
+    }
+
+    /**
+     * Get upcoming events for this user.
+     */
+    public function getUpcomingEventsAttribute()
+    {
+        return $this->registeredEvents()
+                   ->where('start_datetime', '>', now())
+                   ->where('status', 'published')
+                   ->orderBy('start_datetime')
+                   ->get();
+    }
+
+    /**
+     * Reading Challenge relationships
+     */
+    public function challengeParticipations()
+    {
+        return $this->hasMany(ChallengeParticipant::class);
+    }
+
+    public function createdChallenges()
+    {
+        return $this->hasMany(ReadingChallenge::class, 'creator_id');
+    }
+
+    /**
+     * Check if user can create challenges
+     */
+    public function canCreateChallenges()
+    {
+        return $this->isAdmin() || $this->role === 'moderator';
+    }
 }

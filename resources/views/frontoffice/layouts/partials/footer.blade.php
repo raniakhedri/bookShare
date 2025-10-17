@@ -63,7 +63,7 @@
                             <a href="{{ route('notes') }}">Notes</a>
                         </li>
                         <li class="mb-1">
-                            <a href="{{ route('groups') }}">Groups</a>
+                            <a href="{{ route('groups.index') }}">Groups</a>
                         </li>
                         <li class="mb-1">
                             <a href="{{ route('marketplace') }}">Marketplace</a>

@@ -14,6 +14,8 @@
         content="@yield('description', 'Bookly is Bookstore eCommerce TailwindCSS Website Template')">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    @stack('head')
+
     <!-- Tailwind CSS via CDN (for development) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -103,12 +105,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
         rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-vWzH5FYZr9wFZyKq3hRUpQKTdZXpoeUgX+yYbRJst8Fffr9l6Vb9A6qolbN+5O5wK4YwAY+cF5rZ1O2Qv9C3+A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- ✅ Bootstrap Icons -->
-    <link 
-    rel="stylesheet" 
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     @stack('styles')
 </head>
@@ -139,8 +135,6 @@
     <script src="{{ mix('js/app.js') }}"></script>
 
     @stack('scripts')
-    @yield('scripts')
-
 
 </body>
 
