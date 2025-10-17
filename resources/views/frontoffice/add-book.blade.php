@@ -78,6 +78,24 @@
                             <input id="image" name="image" type="file" accept="image/*" class="hidden"
                                 onchange="previewImage(event)">
 
+                            <!-- AI Generate Cover Button -->
+                            <div class="mt-4">
+                                <button type="button" id="aiGenerateImageBtn"
+                                    class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    🎨 Generate AI Book Cover
+                                </button>
+                                <div id="aiImageLoadingMsg" class="hidden mt-3 text-sm text-purple-600 flex items-center justify-center">
+                                    <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    AI is creating your book cover... (this may take 10-30 seconds)
+                                </div>
+                            </div>
+
                             @error('image')
                                 <p class="mt-3 text-red-600 text-sm flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -184,11 +202,31 @@
 
                         <!-- Description -->
                         <div>
-                            <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">Tell us about
-                                this book</label>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="description" class="block text-sm font-semibold text-gray-700">Tell us about
+                                    this book</label>
+                                <button type="button" id="aiGenerateBtn"
+                                    class="inline-flex items-center px-3 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-md hover:bg-purple-200 transition-colors">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                    AI Generate
+                                </button>
+                            </div>
                             <textarea id="description" name="description" rows="4"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all @error('description') border-red-500 @enderror"
                                 placeholder="What did you love about this book? Any special notes about its condition or history?">{{ old('description') }}</textarea>
+                            <div id="aiLoadingMsg" class="hidden mt-2 text-sm text-purple-600 flex items-center">
+                                <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                AI is generating your description...
+                            </div>
                             @error('description')
                                 <p class="mt-2 text-red-600 text-sm">{{ $message }}</p>
                             @enderror
@@ -298,6 +336,140 @@
             form.addEventListener('submit', function () {
                 submitBtn.innerHTML = '⏳ Sharing Your Book...';
                 submitBtn.disabled = true;
+            });
+
+            // AI Description Generation
+            const aiGenerateBtn = document.getElementById('aiGenerateBtn');
+            const descriptionTextarea = document.getElementById('description');
+            const titleInput = document.getElementById('title');
+            const authorInput = document.getElementById('author');
+            const aiLoadingMsg = document.getElementById('aiLoadingMsg');
+
+            aiGenerateBtn.addEventListener('click', async function () {
+                const title = titleInput.value.trim();
+                const author = authorInput.value.trim();
+
+                if (!title || !author) {
+                    alert('Please enter the book title and author first.');
+                    return;
+                }
+
+                // Get selected condition
+                const conditionInputs = document.querySelectorAll('input[name="condition"]');
+                let condition = '';
+                conditionInputs.forEach(input => {
+                    if (input.checked) {
+                        condition = input.value;
+                    }
+                });
+
+                // Show loading state
+                aiGenerateBtn.disabled = true;
+                aiGenerateBtn.innerHTML = '<svg class="animate-spin w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Generating...';
+                aiLoadingMsg.classList.remove('hidden');
+
+                try {
+                    const response = await fetch('{{ route("marketplace.books.generate-description") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            title: title,
+                            author: author,
+                            condition: condition
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        descriptionTextarea.value = data.description;
+                        descriptionTextarea.focus();
+                    } else {
+                        alert('Failed to generate description: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while generating the description. Please try again.');
+                } finally {
+                    // Reset button state
+                    aiGenerateBtn.disabled = false;
+                    aiGenerateBtn.innerHTML = '<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>AI Generate';
+                    aiLoadingMsg.classList.add('hidden');
+                }
+            });
+
+            // AI Book Cover Generation
+            const aiGenerateImageBtn = document.getElementById('aiGenerateImageBtn');
+            const aiImageLoadingMsg = document.getElementById('aiImageLoadingMsg');
+            const uploadArea = document.getElementById('uploadArea');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const imageInput = document.getElementById('image');
+
+            aiGenerateImageBtn.addEventListener('click', async function() {
+                const title = titleInput.value.trim();
+                const author = authorInput.value.trim();
+                const description = descriptionTextarea.value.trim();
+                
+                if (!title || !author) {
+                    alert('Please enter the book title and author first.');
+                    return;
+                }
+
+                // Show loading state
+                aiGenerateImageBtn.disabled = true;
+                aiGenerateImageBtn.innerHTML = '<svg class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Generating...';
+                aiImageLoadingMsg.classList.remove('hidden');
+
+                try {
+                    const response = await fetch('{{ route("marketplace.books.generate-cover") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            title: title,
+                            author: author,
+                            description: description
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Display the generated image
+                        previewImg.src = data.image_url;
+                        uploadArea.classList.add('hidden');
+                        imagePreview.classList.remove('hidden');
+                        
+                        // Create a fake file input to simulate file selection for form submission
+                        // We'll store the image path in a hidden input
+                        let hiddenInput = document.getElementById('generated_image_path');
+                        if (!hiddenInput) {
+                            hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'generated_image_path';
+                            hiddenInput.id = 'generated_image_path';
+                            document.querySelector('form').appendChild(hiddenInput);
+                        }
+                        hiddenInput.value = data.image_path;
+                        
+                    } else {
+                        alert('Failed to generate book cover: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while generating the book cover. Please try again.');
+                } finally {
+                    // Reset button state
+                    aiGenerateImageBtn.disabled = false;
+                    aiGenerateImageBtn.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>🎨 Generate AI Book Cover';
+                    aiImageLoadingMsg.classList.add('hidden');
+                }
             });
 
             // Auto-format ISBN input

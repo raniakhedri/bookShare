@@ -30,4 +30,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'endpoint' => env('OPENAI_ENDPOINT'),
+        'api_version' => env('OPENAI_API_VERSION'),
+        'dalle_endpoint' => env('DALLE_ENDPOINT'),
+        'dalle_api_version' => env('DALLE_API_VERSION'),
+    ],
+
 ];

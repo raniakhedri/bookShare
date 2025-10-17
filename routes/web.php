@@ -59,6 +59,8 @@ Route::middleware('auth')->prefix('marketplace')->group(function () {
 		'destroy' => 'marketplace.books.destroy',
 	]);
 	Route::patch('books/{book}/toggle-availability', [MarketBookWebController::class, 'toggleAvailability'])->name('marketplace.books.toggle-availability');
+	Route::post('books/generate-description', [MarketBookWebController::class, 'generateDescription'])->name('marketplace.books.generate-description');
+	Route::post('books/generate-cover', [MarketBookWebController::class, 'generateBookCover'])->name('marketplace.books.generate-cover');
 
 	// Transaction management
 	Route::get('books/{book}/request', [TransactionWebController::class, 'create'])->name('marketplace.transactions.create');
@@ -205,9 +207,9 @@ Route::put('/journals/{journal}', [JournalController::class, 'update'])->name('j
 Route::get('/journals/{journal}/archived', [JournalController::class, 'showArchived'])->name('journals.archived');
 Route::patch('/journals/{journal}/books/{book}/unarchive', [JournalController::class, 'unarchiveBook'])->name('journals.unarchive-book');
 Route::delete('/journals/{journal}/books/{book}/detach', [JournalController::class, 'detachBook'])->name('journals.detach-book');
-Route::patch('/journals/{journal}/books/{book}/archive', [JournalController::class, 'archiveBook'])->name('journals.archive-book'); 
+Route::patch('/journals/{journal}/books/{book}/archive', [JournalController::class, 'archiveBook'])->name('journals.archive-book');
 Route::get('/journals/{journal}/book/{book}', [JournalController::class, 'showBook'])
-     ->name('journals.showBook');
+	->name('journals.showBook');
 Route::delete('/journals/{journal}', [JournalController::class, 'destroy'])->name('journals.destroy');
 Route::post('/journals/{journal}/lock', [JournalController::class, 'lock'])->name('journals.lock');
 Route::post('/journals/{journal}/unlock', [JournalController::class, 'unlock'])->name('journals.unlock');
@@ -215,8 +217,8 @@ Route::post('/journals/{journal}/unlock', [JournalController::class, 'unlock'])-
 Route::get('/journals/{id}/quizzes', [QuizController::class, 'showQuizzes'])->name('journals.quizzes');
 Route::post('/quizzes/{id}/answer', [QuizController::class, 'submitAnswer'])->name('quizzes.answer');
 Route::middleware(['auth'])->group(function () {
-// Pour les participants : voir les quiz du journal
-Route::get('/journals/{journal}/participant-quizzes', [QuizController::class, 'showForParticipant'])->name('journals.participantQuizzes');
+	// Pour les participants : voir les quiz du journal
+	Route::get('/journals/{journal}/participant-quizzes', [QuizController::class, 'showForParticipant'])->name('journals.participantQuizzes');
 });
 Route::get('/journals/{id}/quizzess', [JournalController::class, 'participantQuizzes'])->name('journals.participantQuizzes');
 
@@ -493,22 +495,22 @@ Route::get('/reviews/{review}/vote-stats', [ReviewInteractionController::class, 
 
 // Protected routes - Require authentication
 Route::middleware('auth')->group(function () {
-    // Review management
-    Route::get('/books/{book}/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
-    Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
-    Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
-    Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
-    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
-    Route::get('/my-reviews', [ReviewController::class, 'myReviews'])->name('reviews.my-reviews');
-    
-    // Interaction management - GET routes first
-    Route::get('/reviews/{review}/discussions', [ReviewInteractionController::class, 'discussions'])->name('interactions.discussions');
-    Route::get('/my-interactions', [ReviewInteractionController::class, 'myInteractions'])->name('interactions.my-interactions');
-    Route::get('/my-bookmarks', [ReviewInteractionController::class, 'bookmarks'])->name('interactions.bookmarks');
-    
-    // Interaction CRUD - POST/PUT/DELETE routes
-    Route::post('/reviews/{review}/interactions', [ReviewInteractionController::class, 'store'])->name('interactions.store');
-    Route::put('/interactions/{interaction}', [ReviewInteractionController::class, 'update'])->name('interactions.update');
-    Route::delete('/interactions/{interaction}', [ReviewInteractionController::class, 'destroy'])->name('interactions.destroy');
-    Route::post('/interactions/{interaction}/report', [ReviewInteractionController::class, 'report'])->name('interactions.report');
+	// Review management
+	Route::get('/books/{book}/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
+	Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+	Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
+	Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
+	Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+	Route::get('/my-reviews', [ReviewController::class, 'myReviews'])->name('reviews.my-reviews');
+
+	// Interaction management - GET routes first
+	Route::get('/reviews/{review}/discussions', [ReviewInteractionController::class, 'discussions'])->name('interactions.discussions');
+	Route::get('/my-interactions', [ReviewInteractionController::class, 'myInteractions'])->name('interactions.my-interactions');
+	Route::get('/my-bookmarks', [ReviewInteractionController::class, 'bookmarks'])->name('interactions.bookmarks');
+
+	// Interaction CRUD - POST/PUT/DELETE routes
+	Route::post('/reviews/{review}/interactions', [ReviewInteractionController::class, 'store'])->name('interactions.store');
+	Route::put('/interactions/{interaction}', [ReviewInteractionController::class, 'update'])->name('interactions.update');
+	Route::delete('/interactions/{interaction}', [ReviewInteractionController::class, 'destroy'])->name('interactions.destroy');
+	Route::post('/interactions/{interaction}/report', [ReviewInteractionController::class, 'report'])->name('interactions.report');
 });
