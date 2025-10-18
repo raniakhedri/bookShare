@@ -47,7 +47,7 @@ jobs:
         with:
           args: >
             -Dsonar.organization=Rania-khedri
-            -Dsonar.projectKey=raniakhedri
+            -Dsonar.projectKey=bookShare
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.sources=app
             -Dsonar.tests=tests
