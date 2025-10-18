@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('interactive_sessions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('journal_id')->constrained('comments_journals')->onDelete('cascade');
             $table->timestamps();
         });
     }

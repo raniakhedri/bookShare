@@ -8,6 +8,13 @@
         $query->with('user')->active()->latest();
     }]);
 @endphp
+
+<!-- Métadonnées pour le système IA -->
+<div data-current-book-id="{{ $book->id }}" style="display: none;"></div>
+@if(auth()->check())
+    <meta name="user-id" content="{{ auth()->id() }}">
+@endif
+
 <div class="min-h-screen bg-[#FDFDFC] dark:bg-[#0a0a0a] py-8">
     <div class="container mx-auto px-4 lg:px-8 max-w-6xl">
         <!-- Breadcrumb amélioré -->
@@ -106,12 +113,29 @@
                     <div class="flex flex-col sm:flex-row gap-3">
                        
                         
-                        <button class="px-6 py-3 border-2 border-[#e3e3e0] dark:border-[#3E3E3A] text-[#1b1b18] dark:text-[#EDEDEC] rounded-xl font-semibold hover:border-[#f53003] dark:hover:border-[#FF4433] hover:text-[#f53003] dark:hover:text-[#FF4433] transition-all duration-300 flex items-center justify-center gap-3 group">
-                            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                            Add to Favorites
-                        </button>
+                        @auth
+                            <button onclick="toggleFavorite({{ $book->id }})" 
+                                    class="favorite-btn px-6 py-3 border-2 border-[#e3e3e0] dark:border-[#3E3E3A] text-[#1b1b18] dark:text-[#EDEDEC] rounded-xl font-semibold hover:border-[#f53003] dark:hover:border-[#FF4433] hover:text-[#f53003] dark:hover:text-[#FF4433] transition-all duration-300 flex items-center justify-center gap-3 group"
+                                    data-book-id="{{ $book->id }}">
+                                <svg class="w-5 h-5 group-hover:scale-110 transition-transform favorite-icon 
+                                    {{ auth()->user()->favorites()->where('book_id', $book->id)->exists() ? 'text-[#f53003] fill-current' : '' }}" 
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                                <span class="favorite-text">
+                                    {{ auth()->user()->favorites()->where('book_id', $book->id)->exists() ? 'Remove from Favorites' : 'Add to Favorites' }}
+                                </span>
+                            </button>
+                        @else
+                            <a href="{{ route('login') }}" 
+                               class="px-6 py-3 border-2 border-[#e3e3e0] dark:border-[#3E3E3A] text-[#1b1b18] dark:text-[#EDEDEC] rounded-xl font-semibold hover:border-[#f53003] dark:hover:border-[#FF4433] hover:text-[#f53003] dark:hover:text-[#FF4433] transition-all duration-300 flex items-center justify-center gap-3 group">
+                                <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                                Login to Add to Favorites
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -123,7 +147,7 @@
                     <div class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl border-2 border-blue-200 dark:border-blue-700 shadow-lg overflow-hidden">
                         <!-- En-tête PDF -->
                         <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-6 py-4 border-b border-blue-200 dark:border-blue-700">
-                            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div class="flex flex-col lg:flex-row justify-between items-center gap-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center shadow-lg">
                                         <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -131,11 +155,74 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h3 class="font-semibold text-gray-900 dark:text-white">PDF Preview</h3>
-                                        <p class="text-sm text-gray-600 dark:text-gray-300">Read the book online</p>
+                                        <h3 class="font-semibold text-gray-900 dark:text-white">PDF Preview & Audio Reading</h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300">Read the book online or listen to it</p>
+                                        <p id="audioStatusMessage" class="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                                            <span class="inline-flex items-center">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Mode démo : Extraction automatique du PDF en cours...
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
-                                <div class="flex gap-2">
+                                
+                                <!-- Contrôles Audio et Actions -->
+                                <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                                    <!-- Contrôles Audio -->
+                                    <div class="audio-controls flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl p-2 border border-purple-200 dark:border-purple-700">
+                                        <button id="playPauseBtn" class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all duration-300 shadow-lg hover:shadow-xl">
+                                            <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M8 5v14l11-7z"/>
+                                            </svg>
+                                            <svg id="pauseIcon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                            </svg>
+                                        </button>
+                                        
+                                        <button id="stopBtn" class="flex items-center justify-center w-8 h-8 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-300">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M6 6h12v12H6z"/>
+                                            </svg>
+                                        </button>
+                                        
+                                        <!-- Contrôle de vitesse -->
+                                        <div class="flex items-center gap-1">
+                                            <label class="text-xs font-medium text-gray-600 dark:text-gray-300">Speed:</label>
+                                            <select id="speedControl" class="text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1">
+                                                <option value="0.5">0.5x</option>
+                                                <option value="0.75">0.75x</option>
+                                                <option value="1" selected>1x</option>
+                                                <option value="1.25">1.25x</option>
+                                                <option value="1.5">1.5x</option>
+                                                <option value="2">2x</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Sélection de voix -->
+                                        <select id="voiceSelect" class="text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 max-w-32">
+                                            <option value="">Default Voice</option>
+                                        </select>
+                                        
+                                        <!-- Contrôle de volume -->
+                                        <div class="flex items-center gap-1">
+                                            <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                                            </svg>
+                                            <input 
+                                                type="range" 
+                                                id="volumeControl" 
+                                                min="0" 
+                                                max="1" 
+                                                step="0.1" 
+                                                value="1" 
+                                                class="w-16 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                                            >
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Bouton de téléchargement -->
                                     <a href="{{ asset('storage/' . $book->file) }}" 
                                        download 
                                        class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 flex items-center gap-2 shadow hover:shadow-lg">
@@ -144,6 +231,63 @@
                                         </svg>
                                         Download PDF
                                     </a>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Bar pour la lecture audio -->
+                            <div id="audioProgress" class="mt-4 hidden">
+                                <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span>Audio Reading Progress</span>
+                                        <span id="currentChapter" class="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded text-xs font-medium">
+                                            Passage 1 / 1
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span id="timeRemaining" class="text-xs text-gray-500">~0 min restant</span>
+                                        <span id="progressText" class="font-medium">0%</span>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner">
+                                    <div id="progressBar" class="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full transition-all duration-300 relative overflow-hidden" style="width: 0%">
+                                        <!-- Effet de brillance -->
+                                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 animate-shimmer"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Contrôles supplémentaires -->
+                                <div class="flex items-center justify-between mt-3">
+                                    <div class="flex items-center gap-2">
+                                        <!-- Bouton précédent -->
+                                        <button id="prevChapterBtn" class="flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors" title="Passage précédent (Ctrl+←)">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                                            </svg>
+                                        </button>
+                                        
+                                        <!-- Bouton suivant -->
+                                        <button id="nextChapterBtn" class="flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors" title="Passage suivant (Ctrl+→)">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                                            </svg>
+                                        </button>
+                                        
+                                        <!-- Séparateur -->
+                                        <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2"></div>
+                                        
+                                        <!-- Bouton extraction manuelle -->
+                                        <button id="retryExtractionBtn" class="flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="Essayer d'extraire le texte PDF">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0L8 8m4-4v12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        <span>Raccourcis: </span>
+                                        <kbd class="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Espace</kbd> = Play/Pause,
+                                        <kbd class="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Ctrl+S</kbd> = Stop
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -190,6 +334,10 @@
                 </button>
             </div>
         </div>
+
+        <!-- Widget de recommandations IA -->
+        @include('components.ai-recommendations-widget', ['showAiRecommendations' => true])
+
 <!-- Reviews Section - Add this to your book_show.blade.php -->
 <div class="mt-12">
     <div class="border-t border-gray-200 pt-8">
@@ -370,6 +518,614 @@
 </div>
 @endsection
 
+@push('scripts')
+<script>
+function toggleFavorite(bookId) {
+    fetch(`/books/${bookId}/favorite`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        const button = document.querySelector(`.favorite-btn[data-book-id="${bookId}"]`);
+        const icon = button.querySelector('.favorite-icon');
+        const text = button.querySelector('.favorite-text');
+        const headerCount = document.querySelector('.favorites-count');
+
+        if (data.status) {
+            icon.classList.add('text-[#f53003]', 'fill-current');
+            text.textContent = 'Remove from Favorites';
+        } else {
+            icon.classList.remove('text-[#f53003]', 'fill-current');
+            text.textContent = 'Add to Favorites';
+        }
+
+        // Update the counter in the header
+        if (headerCount) {
+            headerCount.textContent = data.count;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating favorites');
+    });
+}
+
+// ========================================
+// SYSTÈME DE LECTURE AUDIO AVANCÉ
+// ========================================
+
+class AudioBookReader {
+    constructor() {
+        this.synthesis = window.speechSynthesis;
+        this.utterance = null;
+        this.isReading = false;
+        this.currentText = '';
+        this.textChunks = [];
+        this.currentChunkIndex = 0;
+        this.voices = [];
+        this.bookTitle = '{{ $book->title }}';
+        this.progress = 0;
+        
+        this.init();
+    }
+    
+    async init() {
+        // Attendre que les voix soient chargées
+        await this.loadVoices();
+        this.bindEvents();
+        this.loadReadingPosition();
+        
+        // Essayer d'extraire le texte du PDF
+        await this.extractPdfText();
+        
+        console.log('AudioBookReader initialized');
+    }
+    
+    async loadVoices() {
+        return new Promise((resolve) => {
+            const loadVoicesCallback = () => {
+                this.voices = this.synthesis.getVoices();
+                this.populateVoiceSelect();
+                resolve();
+            };
+            
+            if (this.voices.length > 0) {
+                loadVoicesCallback();
+            } else {
+                this.synthesis.addEventListener('voiceschanged', loadVoicesCallback);
+                // Timeout de sécurité
+                setTimeout(loadVoicesCallback, 1000);
+            }
+        });
+    }
+    
+    populateVoiceSelect() {
+        const voiceSelect = document.getElementById('voiceSelect');
+        if (!voiceSelect) return;
+        
+        // Vider les options existantes sauf la première
+        while (voiceSelect.children.length > 1) {
+            voiceSelect.removeChild(voiceSelect.lastChild);
+        }
+        
+        // Filtrer et trier les voix
+        const preferredVoices = this.voices.filter(voice => 
+            voice.lang.startsWith('en') || 
+            voice.lang.startsWith('fr') || 
+            voice.lang.startsWith('es') ||
+            voice.name.includes('Google') ||
+            voice.name.includes('Microsoft')
+        ).sort((a, b) => {
+            // Prioriser les voix premium
+            if (a.name.includes('Google') && !b.name.includes('Google')) return -1;
+            if (b.name.includes('Google') && !a.name.includes('Google')) return 1;
+            if (a.name.includes('Microsoft') && !b.name.includes('Microsoft')) return -1;
+            if (b.name.includes('Microsoft') && !a.name.includes('Microsoft')) return 1;
+            return a.name.localeCompare(b.name);
+        });
+        
+        preferredVoices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            if (voice.default) option.selected = true;
+            voiceSelect.appendChild(option);
+        });
+    }
+    
+    async extractPdfText() {
+        try {
+            const pdfUrl = '{{ asset("storage/" . $book->file) }}';
+            
+            // Pour une démo, utilisons du texte de remplacement
+            // Dans une implémentation complète, vous pourriez utiliser PDF.js
+            this.currentText = `
+                Bienvenue dans la lecture audio de ${this.bookTitle}.
+                
+                Cette fonctionnalité vous permet d'écouter le contenu du livre au lieu de le lire.
+                
+                Vous pouvez contrôler la vitesse de lecture, changer de voix, et suivre votre progression.
+                
+                L'extracton automatique du texte PDF nécessiterait l'intégration de PDF.js ou d'un service backend.
+                
+                Pour cette démonstration, nous utilisons ce texte d'exemple qui montre toutes les fonctionnalités audio disponibles.
+                
+                Vous pouvez mettre en pause, reprendre, changer la vitesse, et même changer de voix pour personnaliser votre expérience d'écoute.
+                
+                Cette technologie rend les livres accessibles à tous, y compris aux personnes ayant des difficultés de lecture.
+            `;
+            
+            this.prepareTextForReading();
+            
+        } catch (error) {
+            console.error('Erreur lors de l\'extraction du texte PDF:', error);
+            this.currentText = `Erreur lors de l'extraction du texte du PDF. ${this.bookTitle} - Texte de démonstration pour la fonctionnalité de lecture audio.`;
+            this.prepareTextForReading();
+        }
+    }
+    
+    prepareTextForReading() {
+        // Diviser le texte en chunks plus petits pour une meilleure gestion
+        this.textChunks = this.currentText
+            .split(/[.!?]+/)
+            .filter(chunk => chunk.trim().length > 0)
+            .map(chunk => chunk.trim() + '.');
+            
+        console.log(`Texte préparé en ${this.textChunks.length} segments`);
+    }
+    
+    bindEvents() {
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const speedControl = document.getElementById('speedControl');
+        const voiceSelect = document.getElementById('voiceSelect');
+        
+        if (playPauseBtn) {
+            playPauseBtn.addEventListener('click', () => {
+                this.isReading ? this.pause() : this.play();
+            });
+        }
+        
+        if (stopBtn) {
+            stopBtn.addEventListener('click', () => this.stop());
+        }
+        
+        if (speedControl) {
+            speedControl.addEventListener('change', (e) => {
+                this.setSpeed(parseFloat(e.target.value));
+            });
+        }
+        
+        if (voiceSelect) {
+            voiceSelect.addEventListener('change', (e) => {
+                this.setVoice(parseInt(e.target.value));
+            });
+        }
+    }
+    
+    play() {
+        if (!this.currentText) {
+            this.showNotification('Le texte n\'est pas encore disponible', 'warning');
+            return;
+        }
+        
+        if (this.synthesis.speaking && this.synthesis.paused) {
+            // Reprendre la lecture en cours
+            this.synthesis.resume();
+            this.updatePlayPauseButton(true);
+            this.isReading = true;
+            this.showAudioProgress();
+            return;
+        }
+        
+        // Commencer une nouvelle lecture
+        this.startReading();
+    }
+    
+    startReading() {
+        const textToRead = this.textChunks.slice(this.currentChunkIndex).join(' ');
+        
+        if (!textToRead) {
+            this.showNotification('Fin de la lecture atteinte', 'info');
+            this.reset();
+            return;
+        }
+        
+        this.utterance = new SpeechSynthesisUtterance(textToRead);
+        
+        // Configuration de l'utterance
+        this.utterance.rate = parseFloat(document.getElementById('speedControl').value);
+        this.utterance.volume = 1;
+        this.utterance.pitch = 1;
+        
+        // Sélectionner la voix
+        const voiceIndex = parseInt(document.getElementById('voiceSelect').value);
+        if (!isNaN(voiceIndex) && this.voices[voiceIndex]) {
+            this.utterance.voice = this.voices[voiceIndex];
+        }
+        
+        // Événements
+        this.utterance.onstart = () => {
+            this.isReading = true;
+            this.updatePlayPauseButton(true);
+            this.showAudioProgress();
+            this.showNotification('Lecture audio démarrée', 'success');
+        };
+        
+        this.utterance.onend = () => {
+            this.isReading = false;
+            this.updatePlayPauseButton(false);
+            this.currentChunkIndex = this.textChunks.length; // Marquer comme terminé
+            this.updateProgress(100);
+            this.saveReadingPosition();
+            this.showNotification('Lecture terminée', 'info');
+        };
+        
+        this.utterance.onerror = (event) => {
+            console.error('Erreur de lecture audio:', event);
+            this.isReading = false;
+            this.updatePlayPauseButton(false);
+            this.showNotification('Erreur lors de la lecture audio', 'error');
+        };
+        
+        this.utterance.onboundary = (event) => {
+            // Calculer et mettre à jour le progrès
+            const progress = ((event.charIndex / textToRead.length) * 100);
+            this.updateProgress(progress);
+        };
+        
+        // Commencer la lecture
+        this.synthesis.speak(this.utterance);
+    }
+    
+    pause() {
+        if (this.synthesis.speaking && !this.synthesis.paused) {
+            this.synthesis.pause();
+            this.isReading = false;
+            this.updatePlayPauseButton(false);
+            this.saveReadingPosition();
+            this.showNotification('Lecture en pause', 'info');
+        }
+    }
+    
+    stop() {
+        this.synthesis.cancel();
+        this.isReading = false;
+        this.updatePlayPauseButton(false);
+        this.hideAudioProgress();
+        this.currentChunkIndex = 0;
+        this.updateProgress(0);
+        this.saveReadingPosition();
+        this.showNotification('Lecture arrêtée', 'info');
+    }
+    
+    reset() {
+        this.stop();
+        this.currentChunkIndex = 0;
+        this.progress = 0;
+        this.updateProgress(0);
+    }
+    
+    setSpeed(speed) {
+        if (this.utterance) {
+            // Pour changer la vitesse en cours, il faut redémarrer
+            if (this.isReading) {
+                const wasReading = true;
+                this.pause();
+                setTimeout(() => {
+                    if (wasReading) this.play();
+                }, 100);
+            }
+        }
+    }
+    
+    setVoice(voiceIndex) {
+        if (this.voices[voiceIndex]) {
+            // Redémarrer avec la nouvelle voix si en cours de lecture
+            if (this.isReading) {
+                const wasReading = true;
+                this.pause();
+                setTimeout(() => {
+                    if (wasReading) this.play();
+                }, 100);
+            }
+        }
+    }
+    
+    updatePlayPauseButton(isReading) {
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        
+        if (isReading) {
+            playIcon?.classList.add('hidden');
+            pauseIcon?.classList.remove('hidden');
+        } else {
+            playIcon?.classList.remove('hidden');
+            pauseIcon?.classList.add('hidden');
+        }
+    }
+    
+    showAudioProgress() {
+        const audioProgress = document.getElementById('audioProgress');
+        if (audioProgress) {
+            audioProgress.classList.remove('hidden');
+        }
+    }
+    
+    hideAudioProgress() {
+        const audioProgress = document.getElementById('audioProgress');
+        if (audioProgress) {
+            audioProgress.classList.add('hidden');
+        }
+    }
+    
+    updateProgress(percentage) {
+        this.progress = percentage;
+        
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        
+        if (progressBar) {
+            progressBar.style.width = `${percentage}%`;
+        }
+        
+        if (progressText) {
+            progressText.textContent = `${Math.round(percentage)}%`;
+        }
+    }
+    
+    saveReadingPosition() {
+        const bookId = '{{ $book->id }}';
+        const position = {
+            chunkIndex: this.currentChunkIndex,
+            progress: this.progress,
+            timestamp: Date.now()
+        };
+        
+        localStorage.setItem(`audiobook_position_${bookId}`, JSON.stringify(position));
+    }
+    
+    loadReadingPosition() {
+        const bookId = '{{ $book->id }}';
+        const savedPosition = localStorage.getItem(`audiobook_position_${bookId}`);
+        
+        if (savedPosition) {
+            try {
+                const position = JSON.parse(savedPosition);
+                this.currentChunkIndex = position.chunkIndex || 0;
+                this.progress = position.progress || 0;
+                this.updateProgress(this.progress);
+                
+                if (this.progress > 0) {
+                    this.showNotification(`Position de lecture restaurée (${Math.round(this.progress)}%)`, 'info');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la restauration de la position:', error);
+            }
+        }
+    }
+    
+    showNotification(message, type = 'info') {
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-orange-500',
+            info: 'bg-blue-500'
+        };
+        
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full opacity-0 transition-all duration-300`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Animation d'entrée
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full', 'opacity-0');
+        }, 100);
+        
+        // Suppression automatique
+        setTimeout(() => {
+            notification.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 4000);
+    }
+}
+
+// Initialiser le lecteur audio avancé quand la page est chargée
+document.addEventListener('DOMContentLoaded', function() {
+    @if($book->file)
+        // Charger PDF.js d'abord
+        const pdfScript = document.createElement('script');
+        pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        pdfScript.onload = function() {
+            // Configurer PDF.js
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            
+            // Charger le script audio avancé
+            const script = document.createElement('script');
+            script.src = '{{ asset("js/audio-reader.js") }}';
+            script.onload = function() {
+            // Initialiser le lecteur audio avancé
+            window.audioBookReader = new AdvancedAudioBookReader({
+                bookId: {{ $book->id }},
+                bookTitle: '{{ addslashes($book->title) }}',
+                pdfUrl: '{{ asset("storage/" . $book->file) }}',
+                enablePdfExtraction: true,
+                autoSave: true,
+                
+                // Callbacks pour les événements
+                onStart: () => {
+                    console.log('Lecture audio démarrée');
+                    // Marquer le PDF comme actif
+                    document.querySelector('.pdf-container')?.classList.add('audio-active');
+                    updateAudioStatus('🎵 Lecture en cours...', 'info');
+                },
+                
+                onPause: () => {
+                    console.log('Lecture en pause');
+                    updateAudioStatus('⏸️ Lecture en pause', 'warning');
+                },
+                
+                onStop: () => {
+                    console.log('Lecture arrêtée');
+                    document.querySelector('.pdf-container')?.classList.remove('audio-active');
+                    updateAudioStatus('⏹️ Lecture arrêtée', 'info');
+                },
+                
+                onEnd: () => {
+                    console.log('Lecture terminée');
+                    document.querySelector('.pdf-container')?.classList.remove('audio-active');
+                    updateAudioStatus('✅ Lecture terminée !', 'success');
+                    // Optionnel: marquer le livre comme lu
+                    markBookAsRead({{ $book->id }});
+                },
+                
+                onError: (error) => {
+                    console.error('Erreur audio:', error);
+                    updateAudioStatus('❌ Erreur de lecture audio', 'error');
+                },
+                
+                onProgress: (percentage) => {
+                    // Optionnel: synchroniser avec le serveur
+                    if (percentage % 10 === 0) { // Sauvegarder tous les 10%
+                        saveReadingProgressToServer({{ $book->id }}, percentage);
+                    }
+                }
+            });
+            
+                // Ajouter la classe fade-in aux contrôles
+                document.querySelector('.audio-controls')?.classList.add('fade-in-controls');
+            };
+            document.head.appendChild(script);
+        };
+        document.head.appendChild(pdfScript);
+        
+        // Fonctions utilitaires
+        function markBookAsRead(bookId) {
+            // Optionnel: marquer le livre comme lu
+            console.log('Livre terminé:', bookId);
+            @auth
+                // Ici vous pourriez ajouter une route pour marquer comme lu
+                console.log('Utilisateur connecté - livre marqué comme lu');
+            @else
+                console.log('Invité - progression sauvegardée localement');
+            @endauth
+        }
+
+        function updateAudioStatus(message, type = 'info') {
+            const statusElement = document.getElementById('audioStatusMessage');
+            if (statusElement) {
+                const colors = {
+                    info: 'text-blue-600 dark:text-blue-400',
+                    success: 'text-green-600 dark:text-green-400',
+                    warning: 'text-orange-600 dark:text-orange-400',
+                    error: 'text-red-600 dark:text-red-400'
+                };
+                
+                const icons = {
+                    info: '<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>',
+                    success: '<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
+                    warning: '<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                    error: '<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>'
+                };
+                
+                statusElement.className = `text-xs ${colors[type]} mt-1`;
+                statusElement.innerHTML = `
+                    <span class="inline-flex items-center">
+                        ${icons[type]}
+                        ${message}
+                    </span>
+                `;
+            }
+        }
+        
+        function saveReadingProgressToServer(bookId, percentage) {
+            if (window.audioBookReader) {
+                const state = window.audioBookReader.getState();
+                
+                fetch('/audiobook/books/' + bookId + '/reading-position', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        chunk_index: state.currentChunk,
+                        position: Math.round(percentage),
+                        total_chunks: state.totalChunks,
+                        timestamp: Date.now()
+                    })
+                }).catch(error => console.log('Erreur sauvegarde position:', error));
+            }
+        }
+        
+                // Ajouter le gestionnaire pour le bouton d'extraction manuelle
+                const retryBtn = document.getElementById('retryExtractionBtn');
+                if (retryBtn) {
+                    retryBtn.addEventListener('click', async function() {
+                        if (window.audioBookReader) {
+                            this.disabled = true;
+                            this.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>';
+                            
+                            try {
+                                await window.audioBookReader.loadPdfText();
+                            } catch (error) {
+                                console.error('Erreur lors de la nouvelle tentative:', error);
+                            } finally {
+                                this.disabled = false;
+                                this.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0L8 8m4-4v12"/></svg>';
+                            }
+                        }
+                    });
+                }
+                
+                // Essayer de charger le texte depuis le serveur si possible
+                fetch('/audiobook/books/{{ $book->id }}/extract-text', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && window.audioBookReader) {
+                        // Vérifier si c'est du vrai contenu ou de la démo
+                        if (data.extraction.method !== 'demo' && data.extraction.text.length > 200) {
+                            // Mettre à jour le lecteur avec le texte du serveur
+                            window.audioBookReader.currentText = data.extraction.text;
+                            window.audioBookReader.textChunks = data.extraction.chunks;
+                            window.audioBookReader.totalCharacters = data.extraction.stats.total_characters;
+                            window.audioBookReader.prepareTextForReading();
+                            
+                            updateAudioStatus('✅ Texte PDF extrait avec succès !', 'success');
+                            console.log('Texte chargé depuis le serveur:', data.extraction.method);
+                        } else {
+                            updateAudioStatus('⚠️ Mode démo : PDF non extractible automatiquement', 'warning');
+                            console.log('Texte de démo détecté, utilisation du fallback local');
+                        }
+                    }
+                })
+                .catch(error => {
+                    updateAudioStatus('⚠️ Mode démo : Utilisation du texte d\'exemple', 'warning');
+                    console.log('Utilisation du texte de fallback:', error);
+                    // Le lecteur utilisera le texte de démonstration
+                });    @endif
+});
+</script>
+@endpush
+
 @push('styles')
 <style>
     .prose {
@@ -438,5 +1194,402 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+/* ========================================
+   STYLES POUR LE LECTEUR AUDIO
+   ======================================== */
+
+/* Animation des contrôles audio */
+.audio-controls {
+    animation: slideInFromTop 0.5s ease-out;
+}
+
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Effets de hover pour les boutons audio */
+#playPauseBtn, #stopBtn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#playPauseBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(147, 51, 234, 0.3);
+}
+
+#stopBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(107, 114, 128, 0.3);
+}
+
+/* Animation de la barre de progression */
+#progressBar {
+    transition: width 0.3s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+#progressBar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Styles pour les sélecteurs */
+#speedControl, #voiceSelect {
+    transition: all 0.2s ease;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+#speedControl:hover, #voiceSelect:hover {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+#speedControl:focus, #voiceSelect:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* Animation de pulsation pour le bouton play actif */
+.reading-active {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(147, 51, 234, 0);
+    }
+}
+
+/* Responsive design pour les contrôles audio */
+@media (max-width: 640px) {
+    .audio-controls {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    #voiceSelect {
+        max-width: none;
+    }
+    
+    .flex-col.sm\\:flex-row {
+        align-items: stretch;
+    }
+}
+
+/* Style pour les notifications */
+.audio-notification {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Animation pour le conteneur PDF */
+.pdf-container {
+    transition: all 0.3s ease;
+}
+
+.pdf-container.audio-active {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+/* Indicateur de lecture active */
+.reading-indicator {
+    position: relative;
+}
+
+.reading-indicator::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #8b5cf6, #06b6d4, #10b981, #f59e0b);
+    background-size: 400% 400%;
+    border-radius: inherit;
+    z-index: -1;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Amélioration des tooltips */
+[title] {
+    position: relative;
+}
+
+/* États de chargement */
+.loading-audio {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading-audio::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top-color: #8b5cf6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Amélioration de l'accessibilité */
+.audio-controls button:focus,
+.audio-controls select:focus {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+}
+
+/* Style sombre pour les contrôles */
+.dark .audio-controls {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.dark #speedControl,
+.dark #voiceSelect {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+
+.dark #speedControl:hover,
+.dark #voiceSelect:hover {
+    border-color: #8b5cf6;
+    background-color: #4b5563;
+}
+
+/* Animation d'entrée pour les contrôles */
+.fade-in-controls {
+    animation: fadeInControls 0.6s ease-out forwards;
+}
+
+@keyframes fadeInControls {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Animation shimmer pour la barre de progression */
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
+.animate-shimmer {
+    animation: shimmer 2s infinite;
+}
+
+/* Styles pour les contrôles de volume */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #8b5cf6 0%, #8b5cf6 var(--value, 100%), #e5e7eb var(--value, 100%), #e5e7eb 100%);
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #8b5cf6;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #8b5cf6;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Styles pour les boutons de chapitre */
+#prevChapterBtn, #nextChapterBtn {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+#prevChapterBtn:hover, #nextChapterBtn:hover {
+    background-color: rgba(139, 92, 246, 0.1);
+    transform: scale(1.05);
+}
+
+/* Indicateur de chapitre animé */
+#currentChapter {
+    transition: all 0.3s ease;
+    animation: slideInChapter 0.5s ease-out;
+}
+
+@keyframes slideInChapter {
+    from {
+        opacity: 0;
+        transform: translateX(-10px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Style pour les touches de raccourci */
+kbd {
+    font-family: inherit;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border: 1px solid currentColor;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* État de lecture active pour le conteneur PDF */
+.pdf-container.audio-active {
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+    border-color: #8b5cf6;
+}
+
+.pdf-container.audio-active iframe {
+    filter: brightness(1.05) saturate(1.1);
+}
+
+/* Animations fluides pour tous les éléments interactifs */
+.audio-controls * {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Effet de focus amélioré */
+.audio-controls button:focus-visible,
+.audio-controls select:focus-visible,
+.audio-controls input:focus-visible {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+}
 </style>
+
+<!-- Scripts pour le système IA -->
+<script src="{{ asset('js/ai-recommendation-system.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enregistrer l'interaction de vue du livre
+    if (window.aiSystem) {
+        window.aiSystem.recordInteraction({{ $book->id }}, 'view', 2.0, {
+            source: 'book_page',
+            book_title: '{{ addslashes($book->title) }}',
+            category: '{{ $book->category->name ?? "" }}'
+        });
+    }
+
+    // Tracker les actions sur cette page
+    document.addEventListener('click', function(e) {
+        if (!window.aiSystem) return;
+
+        // Favoris
+        if (e.target.closest('.favorite-button') || e.target.closest('[data-favorite]')) {
+            window.aiSystem.recordInteraction({{ $book->id }}, 'like', 5.0);
+        }
+
+        // Téléchargement/Lecture PDF
+        if (e.target.closest('.download-btn') || e.target.closest('[data-download]')) {
+            window.aiSystem.recordInteraction({{ $book->id }}, 'download', 8.0);
+        }
+
+        // Audio
+        if (e.target.closest('.audio-controls')) {
+            window.aiSystem.recordInteraction({{ $book->id }}, 'read_time', 6.0, {
+                audio_interaction: true
+            });
+        }
+
+        // Review
+        if (e.target.closest('[href*="reviews"]')) {
+            window.aiSystem.recordInteraction({{ $book->id }}, 'comment', 7.0);
+        }
+    });
+
+    // Tracker le temps passé sur la page
+    let startTime = Date.now();
+    let timeTracked = false;
+
+    function trackReadingTime() {
+        if (timeTracked) return;
+        
+        const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+        if (timeSpent > 30 && window.aiSystem) { // Plus de 30 secondes
+            window.aiSystem.recordInteraction({{ $book->id }}, 'read_time', Math.min(10, timeSpent / 60), {
+                time_spent_seconds: timeSpent,
+                engagement_type: 'page_reading'
+            });
+            timeTracked = true;
+        }
+    }
+
+    // Tracker quand l'utilisateur quitte la page
+    window.addEventListener('beforeunload', trackReadingTime);
+    
+    // Tracker après 2 minutes d'activité
+    setTimeout(trackReadingTime, 120000);
+});
+</script>
 @endpush

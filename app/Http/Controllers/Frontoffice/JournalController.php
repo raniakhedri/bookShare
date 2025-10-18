@@ -67,12 +67,11 @@ class JournalController extends Controller
         ->whereIn('book_id', $books->pluck('id'))
         ->get();
 
-    $quizzes = \App\Models\InteractiveSession::where('journal_id', $journal->id)->get();
 
     // Vérifier si l'utilisateur est collaborateur
     $isCollaborator = $journal->user_id !== auth()->id() && $journal->isSharedWith(auth()->user());
 
-    return view('frontoffice.journals.show', compact('journal', 'books', 'archivedCount', 'notes', 'quizzes', 'isCollaborator'));
+    return view('frontoffice.journals.show', compact('journal', 'books', 'archivedCount', 'notes', 'isCollaborator'));
 }
 
 

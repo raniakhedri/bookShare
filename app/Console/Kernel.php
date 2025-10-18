@@ -30,6 +30,28 @@ class Kernel extends ConsoleKernel
         if(env('IS_DEMO')) {
             $schedule->command('migrate:fresh --seed')->cron($scheduledInterval);
         }
+    
+        // Génération automatique de défis de lecture
+        // Tous les lundis à 9h - nouveaux défis pour commencer la semaine
+        $schedule->command('challenges:generate')
+                ->weeklyOn(1, '09:00')
+                ->timezone('Europe/Paris')
+                ->description('Génération automatique de défis de lecture IA');
+
+        // Génération supplémentaire en milieu de mois pour les groupes très actifs  
+        $schedule->command('challenges:generate --force')
+                ->monthlyOn(15, '14:00')
+                ->timezone('Europe/Paris')
+                ->description('Génération supplémentaire de défis IA (mi-mois)');
+
+        // Nettoyage des défis expirés tous les dimanches
+        $schedule->call(function () {
+            \App\Models\ReadingChallenge::where('status', 'active')
+                ->where('end_date', '<', now())
+                ->update(['status' => 'completed']);
+        })
+        ->weeklyOn(0, '23:00')
+        ->description('Nettoyage automatique des défis expirés');
     }
 
     /**

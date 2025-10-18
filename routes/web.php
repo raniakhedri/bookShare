@@ -70,6 +70,26 @@ Route::middleware('auth')->prefix('marketplace')->group(function () {
 	Route::patch('transactions/{transaction}/complete', [TransactionWebController::class, 'complete'])->name('marketplace.transactions.complete');
 });
 
+// Routes pour les livres
+Route::controller(App\Http\Controllers\Frontoffice\BookController::class)->group(function () {
+    Route::get('/book', 'index')->name('book');
+    Route::get('/books/search', 'index')->name('books.search');
+    Route::get('/livre/{id}', 'show')->name('frontoffice.book.show');
+    
+    // Routes protégées nécessitant une authentification
+    Route::middleware('auth')->group(function () {
+        Route::post('/books/{book}/favorite', 'toggleFavorite')->name('favorites.toggle');
+        Route::get('/favorites', 'favorites')->name('favorites.index');
+        Route::delete('/books/{book}/favorite', 'removeFavorite')->name('favorites.destroy');
+    });
+});
+// Routes pour l'audiobook (web alternatives aux API)
+Route::controller(App\Http\Controllers\AudioBookWebController::class)->prefix('audiobook')->group(function () {
+    Route::get('books/{book}/extract-text', 'extractText')->name('audiobook.extract-text');
+    Route::post('books/{book}/reading-position', 'saveReadingPosition')->name('audiobook.save-position');
+    Route::get('books/{book}/reading-position', 'getReadingPosition')->name('audiobook.get-position');
+});
+
 Route::get('/book', function () {
 	$books = \App\Models\Book::with('category')->paginate(12);
 	$categories = \App\Models\Category::all();
@@ -92,6 +112,7 @@ Route::get('/groups/{id}/wall', function ($id) {
 	$posts = $group->posts()->latest()->get();
 	return view('frontoffice.group_wall', compact('group', 'memberCount', 'recentMembers', 'posts'));
 })->name('frontoffice.group.wall');
+Route::get('/groups/{id}/wall', [App\Http\Controllers\Frontoffice\GroupPostController::class, 'show'])->name('frontoffice.group.wall');
 
 // // Accept or refuse group member and redirect to groups page
 // Route::get('/admin/groups/accept/{groupId}/{userId}', function ($groupId, $userId) {
@@ -165,7 +186,12 @@ Route::get('/notes', function () {
 Route::get('/groups', function () {
 	$groups = \App\Models\Group::with('users')->get();
 	return view('frontoffice.groups', compact('groups'));
-})->name('groups');
+})->name('groups.index');
+
+Route::get('/groups/{group}', function ($id) {
+	$group = \App\Models\Group::with(['users', 'posts.user', 'posts.comments.user'])->findOrFail($id);
+	return view('frontoffice.group-detail', compact('group'));
+})->name('groups.show');
 
 Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace');
 
@@ -488,6 +514,13 @@ Route::group(['prefix' => 'admin', 'middleware' => 'guest'], function () {
 	Route::get('/reset-password/{token}', [ResetController::class, 'resetPass'])->name('password.reset');
 	Route::post('/reset-password', [ChangePasswordController::class, 'changePassword'])->name('password.update');
 });
+// Favorites routes
+use App\Http\Controllers\Frontoffice\FavoriteController;
+Route::middleware('auth')->group(function () {
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::post('/books/{book}/favorite', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    Route::delete('/books/{book}/favorite', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
+});
 // Public routes - Anyone can view
 Route::get('/books/{book}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
 Route::get('/reviews/{review}', [ReviewController::class, 'show'])->name('reviews.show');
@@ -513,4 +546,60 @@ Route::middleware('auth')->group(function () {
 	Route::put('/interactions/{interaction}', [ReviewInteractionController::class, 'update'])->name('interactions.update');
 	Route::delete('/interactions/{interaction}', [ReviewInteractionController::class, 'destroy'])->name('interactions.destroy');
 	Route::post('/interactions/{interaction}/report', [ReviewInteractionController::class, 'report'])->name('interactions.report');
+// AI Recommendations routes
+    Route::get('/ai/recommendations', [App\Http\Controllers\AIRecommendationController::class, 'showRecommendationsPage'])->name('ai.recommendations');
+    Route::post('/ai/recommendations/refresh', function () {
+        $user = auth()->user();
+        Cache::forget('ai_recommendations_' . $user->id);
+        return response()->json(['success' => true, 'message' => 'Recommandations actualisées']);
+    })->name('ai.recommendations.refresh');
+
+    // Group Reactions routes
+    Route::post('/posts/{post}/react', [App\Http\Controllers\ReactionController::class, 'reactToPost'])->name('posts.react');
+    Route::post('/comments/{comment}/react', [App\Http\Controllers\ReactionController::class, 'reactToComment'])->name('comments.react');
+    Route::get('/posts/{post}/reactions', [App\Http\Controllers\ReactionController::class, 'getPostReactions'])->name('posts.reactions');
+    Route::get('/comments/{comment}/reactions', [App\Http\Controllers\ReactionController::class, 'getCommentReactions'])->name('comments.reactions');
+    Route::get('/posts/{post}/reactors/{reactionType?}', [App\Http\Controllers\ReactionController::class, 'getPostReactors'])->name('posts.reactors');
+    Route::get('/groups/{groupId}/most-reacted-posts', [App\Http\Controllers\ReactionController::class, 'getMostReactedPosts'])->name('groups.most-reacted');
+    
+    // Group Badges routes
+    Route::get('/groups/{group}/badges', [App\Http\Controllers\GroupBadgeController::class, 'index'])->name('groups.badges');
+    Route::get('/groups/{group}/members/{user}/badges', [App\Http\Controllers\GroupBadgeController::class, 'memberBadges'])->name('groups.member.badges');
+    Route::post('/groups/{group}/badges/evaluate', [App\Http\Controllers\GroupBadgeController::class, 'evaluateBadges'])->name('groups.badges.evaluate');
+    Route::post('/groups/{group}/badges/evaluate-all', [App\Http\Controllers\GroupBadgeController::class, 'evaluateAllMembers'])->name('groups.badges.evaluate-all');
+    Route::get('/groups/{group}/leaderboard', [App\Http\Controllers\GroupBadgeController::class, 'leaderboard'])->name('groups.leaderboard');
+    Route::post('/groups/{group}/badges/award', [App\Http\Controllers\GroupBadgeController::class, 'awardBadge'])->name('groups.badges.award');
+    Route::delete('/groups/{group}/badges/{badge}', [App\Http\Controllers\GroupBadgeController::class, 'revokeBadge'])->name('groups.badges.revoke');
+
+    // Group Badges routes
+    Route::get('/groups/{group}/badges', [App\Http\Controllers\GroupBadgeController::class, 'index'])->name('groups.badges');
+    Route::post('/groups/{group}/badges/evaluate', [App\Http\Controllers\GroupBadgeController::class, 'evaluateBadges'])->name('groups.badges.evaluate');
+    Route::post('/groups/{group}/badges/evaluate-all', [App\Http\Controllers\GroupBadgeController::class, 'evaluateAllMembers'])->name('groups.badges.evaluate-all');
+    Route::get('/groups/{group}/badges/leaderboard', [App\Http\Controllers\GroupBadgeController::class, 'leaderboard'])->name('groups.badges.leaderboard');
+    Route::get('/groups/{group}/members/{user}/badges', [App\Http\Controllers\GroupBadgeController::class, 'memberBadges'])->name('groups.members.badges');
+    Route::post('/groups/{group}/badges/award', [App\Http\Controllers\GroupBadgeController::class, 'awardBadge'])->name('groups.badges.award');
+    Route::delete('/groups/{group}/badges/{badge}', [App\Http\Controllers\GroupBadgeController::class, 'revokeBadge'])->name('groups.badges.revoke');
+
+    // Group Events routes
+    Route::get('/groups/{group}/events', [App\Http\Controllers\GroupEventController::class, 'index'])->name('groups.events.index');
+    Route::get('/groups/{group}/events/create', [App\Http\Controllers\GroupEventController::class, 'create'])->name('groups.events.create');
+    Route::post('/groups/{group}/events', [App\Http\Controllers\GroupEventController::class, 'store'])->name('groups.events.store');
+    Route::get('/groups/{group}/events/{event}', [App\Http\Controllers\GroupEventController::class, 'show'])->name('groups.events.show');
+    Route::get('/groups/{group}/events/{event}/edit', [App\Http\Controllers\GroupEventController::class, 'edit'])->name('groups.events.edit');
+    Route::put('/groups/{group}/events/{event}', [App\Http\Controllers\GroupEventController::class, 'update'])->name('groups.events.update');
+    Route::delete('/groups/{group}/events/{event}', [App\Http\Controllers\GroupEventController::class, 'destroy'])->name('groups.events.destroy');
+    Route::post('/groups/{group}/events/{event}/register', [App\Http\Controllers\GroupEventController::class, 'register'])->name('groups.events.register');
+    Route::delete('/groups/{group}/events/{event}/unregister', [App\Http\Controllers\GroupEventController::class, 'unregister'])->name('groups.events.unregister');
+    Route::post('/groups/{group}/events/{event}/participants/{participant}/approve', [App\Http\Controllers\GroupEventController::class, 'approveParticipant'])->name('groups.events.approve-participant');
+    Route::post('/groups/{group}/events/{event}/participants/{participant}/reject', [App\Http\Controllers\GroupEventController::class, 'rejectParticipant'])->name('groups.events.reject-participant');
+    Route::post('/groups/{group}/events/{event}/attendance', [App\Http\Controllers\GroupEventController::class, 'markAttendance'])->name('groups.events.attendance');
+
+    // Reading Challenges routes
+    Route::get('/groups/{group}/challenges', [App\Http\Controllers\ReadingChallengeController::class, 'index'])->name('challenges.index');
+    Route::get('/groups/{group}/challenges/{challenge}', [App\Http\Controllers\ReadingChallengeController::class, 'show'])->name('challenges.show');
+    Route::post('/groups/{group}/challenges/{challenge}/join', [App\Http\Controllers\ReadingChallengeController::class, 'join'])->name('challenges.join');
+    Route::delete('/groups/{group}/challenges/{challenge}/leave', [App\Http\Controllers\ReadingChallengeController::class, 'leave'])->name('challenges.leave');
+    Route::post('/groups/{group}/challenges/{challenge}/progress', [App\Http\Controllers\ReadingChallengeController::class, 'updateProgress'])->name('challenges.progress');
+    Route::post('/groups/{group}/challenges/generate', [App\Http\Controllers\ReadingChallengeController::class, 'generate'])->name('challenges.generate');
+    Route::get('/challenges/dashboard', [App\Http\Controllers\ReadingChallengeController::class, 'dashboard'])->name('challenges.dashboard');
 });

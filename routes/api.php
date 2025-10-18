@@ -74,3 +74,52 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('my-interactions', [ReviewInteractionController::class, 'myInteractions']);
     Route::get('my-bookmarks', [ReviewInteractionController::class, 'bookmarks']);
 });
+
+// Audio Book API Routes
+Route::middleware(['auth:web'])->prefix('audiobook')->group(function () {
+    // Extraction de texte PDF pour lecture audio
+    Route::get('books/{book}/extract-text', [App\Http\Controllers\Api\AudioBookController::class, 'extractText']);
+    
+    // Informations PDF
+    Route::get('books/{book}/pdf-info', [App\Http\Controllers\Api\AudioBookController::class, 'getPdfInfo']);
+    
+    // Gestion des positions de lecture
+    Route::post('books/{book}/reading-position', [App\Http\Controllers\Api\AudioBookController::class, 'saveReadingPosition']);
+    Route::get('books/{book}/reading-position', [App\Http\Controllers\Api\AudioBookController::class, 'getReadingPosition']);
+});
+
+// Routes publiques pour l'audio (sans authentification)
+Route::prefix('public/audiobook')->group(function () {
+    // Extraction de texte pour les livres publics
+    Route::get('books/{book}/extract-text', [App\Http\Controllers\Api\AudioBookController::class, 'extractText'])
+        ->where('book', '[0-9]+');
+        
+    // Informations PDF publiques
+    Route::get('books/{book}/pdf-info', [App\Http\Controllers\Api\AudioBookController::class, 'getPdfInfo'])
+        ->where('book', '[0-9]+');
+});
+
+// AI Recommendation API Routes
+Route::middleware('auth:web')->prefix('ai')->group(function () {
+    // Obtenir les recommandations personnalisées
+    Route::get('recommendations', [App\Http\Controllers\AIRecommendationController::class, 'getRecommendations']);
+    
+    // Recommandations basées sur description textuelle
+    Route::post('book-recommendations', [App\Http\Controllers\AIRecommendationController::class, 'getBookRecommendations']);
+    
+    // Statistiques de recherche IA
+    Route::get('search-stats', [App\Http\Controllers\AIRecommendationController::class, 'getSearchStats']);
+    
+    // Enregistrer une interaction utilisateur
+    Route::post('interaction', [App\Http\Controllers\AIRecommendationController::class, 'recordInteraction']);
+    
+    // Feedback sur une recommandation
+    Route::post('feedback', [App\Http\Controllers\AIRecommendationController::class, 'feedbackRecommendation']);
+    
+    // Gestion des préférences utilisateur
+    Route::get('preferences', [App\Http\Controllers\AIRecommendationController::class, 'getUserPreferences']);
+    Route::post('preferences', [App\Http\Controllers\AIRecommendationController::class, 'updatePreference']);
+    
+    // Statistiques d'interaction
+    Route::get('stats', [App\Http\Controllers\AIRecommendationController::class, 'getInteractionStats']);
+});

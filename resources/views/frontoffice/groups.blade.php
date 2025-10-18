@@ -118,7 +118,7 @@
                             @else
                                 <form action="{{ route('groups.join', $group->id) }}" method="POST" class="w-full">
                                     @csrf
-                                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg font-medium text-sm transition-colors inline-flex items-center justify-center gap-2">
+                                    <button type="submit" class="w-full bg-[#f87171] hover:bg-[#d42a03] text-white py-2.5 px-4 rounded-lg font-medium text-sm transition-colors inline-flex items-center justify-center gap-2">
                                         <span>+</span> Join group
                                     </button>
                                 </form>

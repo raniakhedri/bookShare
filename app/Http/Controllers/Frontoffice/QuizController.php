@@ -134,13 +134,9 @@ class QuizController extends Controller
         // Récupère les livres liés au journal (pour la liste déroulante)
         $books = $journal->books()->wherePivot('archived', false)->get();
 
-        // Si tu veux aussi l'historique des quizzes :
-        $quizzes = \App\Models\InteractiveSession::where('journal_id', $journalId)
-            ->where('type', 'quiz')
-            ->get();
-
+        
         // Passe journal, books et quizzes à la vue
-        return view('frontoffice.journals.quiz', compact('journal', 'books', 'quizzes'));
+        return view('frontoffice.journals.quiz', compact('journal', 'books' ));
     }
 
 
