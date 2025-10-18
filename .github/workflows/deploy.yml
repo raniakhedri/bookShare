@@ -46,7 +46,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=Rania-khedri
+            -Dsonar.organization=raniakhedri
             -Dsonar.projectKey=raniakhedri_bookShare
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.sources=app
