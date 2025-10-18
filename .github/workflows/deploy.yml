@@ -46,10 +46,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=Rania-khedri
+            -Dsonar.organization=rania-khedri
             -Dsonar.projectKey=raniakhedri
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.sources=app
             -Dsonar.tests=tests
             -Dsonar.php.coverage.reportPaths=coverage.xml
+            -Dsonar.branch.name=master
+
 
