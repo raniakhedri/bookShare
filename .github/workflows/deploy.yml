@@ -1,0 +1,59 @@
+name: CI for Laravel + Docker + SonarCloud
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Cloner le dépôt
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Configurer PHP (ici 8.2, tu peux adapter)
+      - name: ⚙️ Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, bcmath, curl, gd, zip, pcntl, pdo_mysql
+          coverage: xdebug
+
+      # 3️⃣ Installer les dépendances
+      - name: 📦 Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      # 4️⃣ Générer le fichier .env
+      - name: ⚙️ Copy .env example
+        run: cp .env.example .env
+
+      # 5️⃣ Générer la clé d’application Laravel
+      - name: 🔑 Generate Laravel key
+        run: php artisan key:generate
+
+      # 6️⃣ Lancer les migrations (si nécessaire)
+      - name: 🗃️ Run migrations
+        run: php artisan migrate --force || true
+
+      # 7️⃣ 🧪 Exécuter les tests avec couverture
+      - name: 🧪 Run tests with coverage
+        run: php artisan test --coverage-clover=coverage.xml
+
+      # 8️⃣ 🔍 Analyse du code avec SonarCloud
+      - name: 🔍 SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # fourni automatiquement par GitHub
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=ton_organisation
+            -Dsonar.projectKey=ton_projet
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.sources=app
+            -Dsonar.tests=tests
+            -Dsonar.php.coverage.reportPaths=coverage.xml
+
