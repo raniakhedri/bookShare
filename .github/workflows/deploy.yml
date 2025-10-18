@@ -26,10 +26,6 @@ jobs:
       - name: 📦 Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      # 4️⃣ Générer le fichier .env
-      - name: ⚙️ Copy .env example
-        run: cp .env.example .env
-
       # 5️⃣ Générer la clé d’application Laravel
       - name: 🔑 Generate Laravel key
         run: php artisan key:generate
