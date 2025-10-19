@@ -61,5 +61,5 @@ jobs:
       # 🔟 🐳 Push vers Docker Hub
       - name: 🚀 Push Docker image to Docker Hub
         run: |
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          echo "${{ secrets.DDOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker push kenza319/laravel-app:latest
