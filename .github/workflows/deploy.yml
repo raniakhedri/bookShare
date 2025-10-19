@@ -54,13 +54,12 @@ jobs:
             -Dsonar.php.coverage.reportPaths=coverage.xml
             -Dsonar.branch.name=master
 
-
       # 9️⃣ 🐳 Build de l’image Docker
       - name: 🐳 Build Docker image
-        run: docker build -t ton_utilisateur_dockerhub/ton_projet:latest .
+        run: docker build -t kenza319/laravel-app:latest .
 
       # 🔟 🐳 Push vers Docker Hub
       - name: 🚀 Push Docker image to Docker Hub
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push ton_utilisateur_dockerhub/ton_projet:latest
+          docker push kenza319/laravel-app:latest
