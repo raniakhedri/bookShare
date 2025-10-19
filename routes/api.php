@@ -7,6 +7,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ExchangeRequestController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Api\BookAvailabilityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,14 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// Public API Routes for Browser Extension (No Authentication Required)
+Route::prefix('public')->group(function () {
+    // Check book availability in marketplace
+    Route::get('books/check-availability', [BookAvailabilityController::class, 'checkAvailability']);
+    // Get book details
+    Route::get('books/{id}', [BookAvailabilityController::class, 'getBook']);
 });
 
 // Marketplace API Routes
@@ -63,7 +72,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('reviews', ReviewController::class);
     Route::get('books/{book}/reviews', [ReviewController::class, 'bookReviews']);
     Route::get('my-reviews', [ReviewController::class, 'myReviews']);
-    
+
     // Interaction API routes
     Route::post('reviews/{review}/interactions', [ReviewInteractionController::class, 'store']);
     Route::put('interactions/{interaction}', [ReviewInteractionController::class, 'update']);
@@ -79,10 +88,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:web'])->prefix('audiobook')->group(function () {
     // Extraction de texte PDF pour lecture audio
     Route::get('books/{book}/extract-text', [App\Http\Controllers\Api\AudioBookController::class, 'extractText']);
-    
+
     // Informations PDF
     Route::get('books/{book}/pdf-info', [App\Http\Controllers\Api\AudioBookController::class, 'getPdfInfo']);
-    
+
     // Gestion des positions de lecture
     Route::post('books/{book}/reading-position', [App\Http\Controllers\Api\AudioBookController::class, 'saveReadingPosition']);
     Route::get('books/{book}/reading-position', [App\Http\Controllers\Api\AudioBookController::class, 'getReadingPosition']);
@@ -93,7 +102,7 @@ Route::prefix('public/audiobook')->group(function () {
     // Extraction de texte pour les livres publics
     Route::get('books/{book}/extract-text', [App\Http\Controllers\Api\AudioBookController::class, 'extractText'])
         ->where('book', '[0-9]+');
-        
+
     // Informations PDF publiques
     Route::get('books/{book}/pdf-info', [App\Http\Controllers\Api\AudioBookController::class, 'getPdfInfo'])
         ->where('book', '[0-9]+');
@@ -103,23 +112,23 @@ Route::prefix('public/audiobook')->group(function () {
 Route::middleware('auth:web')->prefix('ai')->group(function () {
     // Obtenir les recommandations personnalisées
     Route::get('recommendations', [App\Http\Controllers\AIRecommendationController::class, 'getRecommendations']);
-    
+
     // Recommandations basées sur description textuelle
     Route::post('book-recommendations', [App\Http\Controllers\AIRecommendationController::class, 'getBookRecommendations']);
-    
+
     // Statistiques de recherche IA
     Route::get('search-stats', [App\Http\Controllers\AIRecommendationController::class, 'getSearchStats']);
-    
+
     // Enregistrer une interaction utilisateur
     Route::post('interaction', [App\Http\Controllers\AIRecommendationController::class, 'recordInteraction']);
-    
+
     // Feedback sur une recommandation
     Route::post('feedback', [App\Http\Controllers\AIRecommendationController::class, 'feedbackRecommendation']);
-    
+
     // Gestion des préférences utilisateur
     Route::get('preferences', [App\Http\Controllers\AIRecommendationController::class, 'getUserPreferences']);
     Route::post('preferences', [App\Http\Controllers\AIRecommendationController::class, 'updatePreference']);
-    
+
     // Statistiques d'interaction
     Route::get('stats', [App\Http\Controllers\AIRecommendationController::class, 'getInteractionStats']);
 });

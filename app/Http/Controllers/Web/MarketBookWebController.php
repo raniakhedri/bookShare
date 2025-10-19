@@ -188,20 +188,20 @@ class MarketBookWebController extends Controller
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
             ])->post(config('services.gemini.text_endpoint') . '?key=' . config('services.gemini.api_key'), [
-                'contents' => [
-                    [
-                        'parts' => [
+                        'contents' => [
                             [
-                                'text' => $prompt
+                                'parts' => [
+                                    [
+                                        'text' => $prompt
+                                    ]
+                                ]
                             ]
-                        ]
-                    ]
-                ],
-                'generationConfig' => [
-                    'maxOutputTokens' => 200,
-                    'temperature' => 0.7,
-                ],
-            ]);
+                        ],
+                        'generationConfig' => [
+                            'maxOutputTokens' => 200,
+                            'temperature' => 0.7,
+                        ],
+                    ]);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -237,64 +237,68 @@ class MarketBookWebController extends Controller
         ]);
 
         try {
-            $prompt = "Create a professional book cover design for the book titled '{$request->title}' by {$request->author}";
+            // Generate a unique placeholder cover using colors and book details
+            // Note: Imagen 3 API integration pending availability
+            // For now, we generate a professional-looking placeholder with gradient colors
 
-            if ($request->description) {
-                $prompt .= ". The book is about: " . substr($request->description, 0, 200);
-            }
+            $seed = crc32($request->title . $request->author);
+            $colors = [
+                ['#FF6B6B', '#FFE66D'], // Red to Yellow
+                ['#4ECDC4', '#44A08D'], // Teal to Green
+                ['#95E1D3', '#F38181'], // Mint to Pink
+                ['#AA96DA', '#FCBAD3'], // Purple to Pink
+                ['#A8DADC', '#457B9D'], // Light Blue to Navy
+                ['#F1FAEE', '#A8DADC'], // Cream to Light Blue
+                ['#E63946', '#F77F00'], // Red to Orange
+                ['#06A77D', '#EEC258'], // Green to Gold
+            ];
 
-            $prompt .= ". Design should be eye-catching, professional, and suitable for a book marketplace. Include the title and author name in an attractive typography. The cover should be visually appealing and convey the book's essence. Generate the cover as an image URL or data that can be displayed.";
+            $colorPair = $colors[$seed % count($colors)];
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])->post(config('services.gemini.image_endpoint') . '?key=' . config('services.gemini.api_key'), [
-                'contents' => [
-                    [
-                        'parts' => [
-                            [
-                                'text' => $prompt
-                            ]
-                        ]
-                    ]
-                ],
-                'generationConfig' => [
-                    'maxOutputTokens' => 1024,
-                    'temperature' => 0.9,
-                ],
+            // Create a unique ID for this cover
+            $coverId = uniqid();
+
+            // Generate a data URL with an SVG placeholder
+            $svgContent = sprintf('
+                <svg width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="grad%s" x1="0%%" y1="0%%" x2="100%%" y2="100%%">
+                            <stop offset="0%%" style="stop-color:%s;stop-opacity:1" />
+                            <stop offset="100%%" style="stop-color:%s;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="300" height="400" fill="url(#grad%s)" />
+                    <text x="150" y="180" font-size="28" font-weight="bold" fill="white" text-anchor="middle" word-spacing="10">
+                        %s
+                    </text>
+                    <text x="150" y="320" font-size="16" fill="rgba(255,255,255,0.8)" text-anchor="middle">
+                        by %s
+                    </text>
+                </svg>
+            ',
+                $coverId,
+                $colorPair[0],
+                $colorPair[1],
+                $coverId,
+                htmlspecialchars(substr($request->title, 0, 30)),
+                htmlspecialchars(substr($request->author, 0, 25))
+            );
+
+            // Save the SVG as a file
+            $filename = 'generated-covers/' . $coverId . '.svg';
+            Storage::disk('public')->put($filename, $svgContent);
+
+            return response()->json([
+                'success' => true,
+                'image_url' => asset('storage/' . $filename),
+                'image_path' => $filename,
+                'note' => 'This is a placeholder cover design. For AI-generated covers with Imagen 3, please check back soon.'
             ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                // Extract the generated image data from Gemini response
-                $imageContent = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-
-                if ($imageContent) {
-                    // For Gemini, we'll store the generated content
-                    // If it returns a URL, use it; otherwise create a placeholder
-                    $filename = 'generated-covers/' . uniqid() . '.txt';
-                    Storage::disk('public')->put($filename, $imageContent);
-
-                    return response()->json([
-                        'success' => true,
-                        'image_url' => asset('storage/' . $filename),
-                        'image_path' => $filename
-                    ]);
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Failed to generate image. Please try again.'
-                    ], 500);
-                }
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to generate image. Please try again.'
-                ], 500);
-            }
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while generating the book cover.'
+                'message' => 'An error occurred while generating the book cover: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Icon Generator</title>
+</head>
+<body>
+  <h2>BookShare Extension Icon Generator</h2>
+  <p>Click the buttons to download icons:</p>
+  <button onclick="downloadIcon(128)">Download 128x128</button>
+  <button onclick="downloadIcon(48)">Download 48x48</button>
+  <button onclick="downloadIcon(16)">Download 16x16</button>
+  
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <script>
+    function downloadIcon(size) {
+      const canvas = document.getElementById('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      
+      // Create gradient background
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      
+      // Draw circle background
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size/2 - 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw book icon
+      const scale = size / 128;
+      ctx.fillStyle = 'white';
+      
+      // Book pages
+      ctx.fillRect(32*scale, 32*scale, 44*scale, 56*scale);
+      
+      // Book spine
+      ctx.fillRect(28*scale, 32*scale, 8*scale, 56*scale);
+      
+      // Checkmark circle
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.arc(76*scale, 80*scale, 12*scale, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Checkmark
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 3*scale;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(70*scale, 80*scale);
+      ctx.lineTo(74*scale, 84*scale);
+      ctx.lineTo(82*scale, 76*scale);
+      ctx.stroke();
+      
+      // Download
+      canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `icon${size}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+  </script>
+</body>
+</html>

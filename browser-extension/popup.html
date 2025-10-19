@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookShare Extension</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 400px;
+      min-height: 300px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #1f2937;
+    }
+
+    .popup-container {
+      padding: 0;
+    }
+
+    .popup-header {
+      background: white;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 3px solid #667eea;
+    }
+
+    .popup-header h1 {
+      font-size: 22px;
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+
+    .popup-header p {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .popup-content {
+      background: white;
+      padding: 20px;
+    }
+
+    .status-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .status-card h3 {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-card p {
+      font-size: 16px;
+      color: #1f2937;
+      font-weight: 600;
+    }
+
+    .status-card.loading p {
+      color: #667eea;
+    }
+
+    .status-card.available p {
+      color: #10b981;
+    }
+
+    .status-card.not-available p {
+      color: #ef4444;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      text-align: center;
+      display: block;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .footer {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #e5e7eb;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .book-info {
+      background: #f0f9ff;
+      border-left: 4px solid #667eea;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+
+    .book-info p {
+      font-size: 13px;
+      margin: 4px 0;
+      color: #1f2937;
+    }
+
+    .book-info strong {
+      color: #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <h1>📚 BookShare</h1>
+      <p>Marketplace Checker</p>
+    </div>
+
+    <div class="popup-content">
+      <div id="bookInfo" class="book-info" style="display: none;">
+        <p><strong>Title:</strong> <span id="bookTitle">-</span></p>
+        <p><strong>Author:</strong> <span id="bookAuthor">-</span></p>
+      </div>
+
+      <div class="status-card" id="statusCard">
+        <h3>Status</h3>
+        <p id="statusText">Click "Check Availability" to scan this page</p>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary" id="checkBtn">
+          🔍 Check Availability
+        </button>
+        <a href="http://127.0.0.1:8000/marketplace" target="_blank" class="btn btn-secondary">
+          🌐 Open Marketplace
+        </a>
+        <button class="btn btn-secondary" id="settingsBtn">
+          ⚙️ Settings
+        </button>
+      </div>
+    </div>
+
+    <div class="footer">
+      Made with ❤️ for <a href="http://127.0.0.1:8000" target="_blank">BookShare</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

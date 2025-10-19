@@ -41,7 +41,7 @@ return [
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
         'text_endpoint' => env('GEMINI_TEXT_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'),
-        'image_endpoint' => env('GEMINI_IMAGE_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'),
+        'image_endpoint' => env('IMAGEN_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3:generateImage'),
     ],
 
 ];
