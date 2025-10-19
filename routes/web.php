@@ -246,7 +246,7 @@ Route::middleware(['auth'])->group(function () {
 	// Pour les participants : voir les quiz du journal
 	Route::get('/journals/{journal}/participant-quizzes', [QuizController::class, 'showForParticipant'])->name('journals.participantQuizzes');
 });
-Route::get('/journals/{id}/quizzess', [JournalController::class, 'participantQuizzes'])->name('journals.participantQuizzes');
+//Route::get('/journals/{id}/quizzess', [JournalController::class, 'participantQuizzes'])->name('journals.participantQuizzes');
 
 // Génération du quiz (POST)
 Route::post('/journals/{id}/generate-quiz', [QuizController::class, 'generateQuiz'])->name('journals.generateQuiz');
