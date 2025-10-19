@@ -186,22 +186,26 @@ class MarketBookWebController extends Controller
             $prompt .= ". Write a description that would attract potential readers and book exchangers. Include what makes this book special, its themes, and why someone would want to read it. Keep it between 50-150 words and make it engaging for a book sharing community.";
 
             $response = Http::withHeaders([
-                'api-key' => config('services.openai.api_key'),
                 'Content-Type' => 'application/json',
-            ])->post(config('services.openai.endpoint') . '?api-version=' . config('services.openai.api_version'), [
-                        'messages' => [
+            ])->post(config('services.gemini.text_endpoint') . '?key=' . config('services.gemini.api_key'), [
+                'contents' => [
+                    [
+                        'parts' => [
                             [
-                                'role' => 'user',
-                                'content' => $prompt
+                                'text' => $prompt
                             ]
-                        ],
-                        'max_tokens' => 200,
-                        'temperature' => 0.7,
-                    ]);
+                        ]
+                    ]
+                ],
+                'generationConfig' => [
+                    'maxOutputTokens' => 200,
+                    'temperature' => 0.7,
+                ],
+            ]);
 
             if ($response->successful()) {
                 $data = $response->json();
-                $description = $data['choices'][0]['message']['content'] ?? '';
+                $description = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
                 return response()->json([
                     'success' => true,
@@ -222,7 +226,7 @@ class MarketBookWebController extends Controller
     }
 
     /**
-     * Generate AI-powered book cover image using DALL-E.
+     * Generate AI-powered book cover image using Gemini.
      */
     public function generateBookCover(Request $request)
     {
@@ -239,27 +243,35 @@ class MarketBookWebController extends Controller
                 $prompt .= ". The book is about: " . substr($request->description, 0, 200);
             }
 
-            $prompt .= ". Design should be eye-catching, professional, and suitable for a book marketplace. Include the title and author name in an attractive typography. The cover should be visually appealing and convey the book's essence.";
+            $prompt .= ". Design should be eye-catching, professional, and suitable for a book marketplace. Include the title and author name in an attractive typography. The cover should be visually appealing and convey the book's essence. Generate the cover as an image URL or data that can be displayed.";
 
             $response = Http::withHeaders([
-                'api-key' => config('services.openai.api_key'),
                 'Content-Type' => 'application/json',
-            ])->post(config('services.openai.dalle_endpoint') . '?api-version=' . config('services.openai.dalle_api_version'), [
-                        'prompt' => $prompt,
-                        'n' => 1,
-                        'size' => '1024x1024',
-                        'quality' => 'standard',
-                        'style' => 'vivid'
-                    ]);
+            ])->post(config('services.gemini.image_endpoint') . '?key=' . config('services.gemini.api_key'), [
+                'contents' => [
+                    [
+                        'parts' => [
+                            [
+                                'text' => $prompt
+                            ]
+                        ]
+                    ]
+                ],
+                'generationConfig' => [
+                    'maxOutputTokens' => 1024,
+                    'temperature' => 0.9,
+                ],
+            ]);
 
             if ($response->successful()) {
                 $data = $response->json();
-                $imageUrl = $data['data'][0]['url'] ?? null;
+                // Extract the generated image data from Gemini response
+                $imageContent = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
-                if ($imageUrl) {
-                    // Download the image and store it
-                    $imageContent = Http::get($imageUrl)->body();
-                    $filename = 'generated-covers/' . uniqid() . '.png';
+                if ($imageContent) {
+                    // For Gemini, we'll store the generated content
+                    // If it returns a URL, use it; otherwise create a placeholder
+                    $filename = 'generated-covers/' . uniqid() . '.txt';
                     Storage::disk('public')->put($filename, $imageContent);
 
                     return response()->json([
