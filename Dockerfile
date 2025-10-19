@@ -1,42 +1,65 @@
-FROM webdevops/php-nginx:8.3-alpine
+FROM php:8.3-cli-alpine
 
-# Dépendances système et extensions PHP
-RUN apk add --no-cache oniguruma-dev libxml2-dev autoconf gcc g++ make \
-    && docker-php-ext-install bcmath ctype fileinfo mbstring pdo_mysql xml
+# Install system dependencies
+RUN apk add --no-cache \
+    oniguruma-dev \
+    libxml2-dev \
+    postgresql-dev \
+    nodejs \
+    npm \
+    git \
+    curl \
+    zip \
+    unzip
 
-# Composer
+# Install PHP extensions
+RUN docker-php-ext-install \
+    bcmath \
+    ctype \
+    fileinfo \
+    mbstring \
+    pdo_mysql \
+    pdo_pgsql \
+    xml
+
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# NodeJS pour assets
-RUN apk add --no-cache nodejs npm
-
-# Variables d'environnement
-ENV WEB_DOCUMENT_ROOT=/app/public
-ENV APP_ENV=production
+# Set working directory
 WORKDIR /app
 
-# Copier le code
+# Copy composer files first for better layer caching
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies
+RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist
+
+# Copy package files
+COPY package*.json ./
+
+# Install Node dependencies
+RUN npm ci --only=production
+
+# Copy application code
 COPY . .
 
-# Installer dépendances Laravel
-RUN git config --global --add safe.directory /app \
-    && rm -rf vendor/* \
-    && composer install --no-dev --no-interaction --optimize-autoloader \
-    && php artisan key:generate \
+# Run Laravel optimizations
+RUN composer dump-autoload --optimize \
+    && php artisan key:generate --force \
     && php artisan config:cache \
+    && php artisan route:cache \
     && php artisan view:cache
 
-# Compilation assets
-RUN npm install && npm run build
+# Build frontend assets
+RUN npm run build
 
-# Permissions
-RUN chown -R application:application .
+# Set permissions for storage and cache
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p storage/logs \
+    && chmod -R 775 storage bootstrap/cache
 
-# User pour exécution
-USER application
-
-# Exposer le port HTTP
+# Expose port
 EXPOSE 8000
 
-# 👉 Lancer Laravel au démarrage
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Start Laravel development server (suitable for Render)
+CMD php artisan serve --host=0.0.0.0 --port=8000
