@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
+use App\Services\HuggingFaceSentimentService;
+use Illuminate\Support\Facades\Http;
 
 class ReviewController extends Controller
 {
@@ -102,38 +104,41 @@ public function create($bookId)
     /**
      * Store a newly created review
      */
-  public function store(StoreReviewRequest $request, $bookId)
+public function store(StoreReviewRequest $request, $bookId)
 {
     $book = Book::findOrFail($bookId);
-    
-    // Check if user already reviewed this book
+
+    // Prevent duplicate reviews
     $existingReview = Review::where('user_id', Auth::id())
-                           ->where('book_id', $bookId)
-                           ->first();
-    
+        ->where('book_id', $bookId)
+        ->first();
+
     if ($existingReview) {
         return redirect()->back()
-                        ->with('error', 'You already have a review for this book.');
+            ->with('error', 'You already have a review for this book.');
     }
 
     $reviewData = $request->validated();
     $reviewData['user_id'] = Auth::id();
     $reviewData['book_id'] = $bookId;
 
-    // Handle photo uploads if present
+    // Upload photos if present
     if ($request->hasFile('photos')) {
         $photoUrls = [];
         foreach ($request->file('photos') as $photo) {
-            $path = $photo->store('review-photos', 'public');
-            $photoUrls[] = $path;
+            $photoUrls[] = $photo->store('review-photos', 'public');
         }
         $reviewData['photo_urls'] = $photoUrls;
     }
 
+    // ✅ Analyze sentiment before creating the review
+    $hf = new HuggingFaceSentimentService();
+    $reviewData['sentiment'] = $hf->analyze($reviewData['review_text'] ?? '');
+
     $review = Review::create($reviewData);
 
-    return redirect()->back()
-                    ->with('success', 'Your review has been added successfully!');
+    return redirect($request->input('redirect_to', route('books.show', $bookId)))
+        ->with('success', 'Your review has been published successfully!');
 }
 
     /**
@@ -174,45 +179,37 @@ public function create($bookId)
     /**
      * Update the specified review
      */
-    public function update(UpdateReviewRequest $request, Review $review)
-    {
-        $this->authorize('update', $review);
+public function update(UpdateReviewRequest $request, Review $review)
+{
+    $this->authorize('update', $review);
 
-        $reviewData = $request->validated();
+    $reviewData = $request->validated();
 
-        // Handle photo uploads
-        if ($request->hasFile('photos')) {
-            // Delete old photos
-            if (!empty($review->photo_urls)) {
-                foreach ($review->photo_urls as $oldPhoto) {
-                    Storage::disk('public')->delete($oldPhoto);
-                }
+    // Upload new photos
+    if ($request->hasFile('photos')) {
+        if (!empty($review->photo_urls)) {
+            foreach ($review->photo_urls as $oldPhoto) {
+                Storage::disk('public')->delete($oldPhoto);
             }
-
-            $photoUrls = [];
-            foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('review-photos', 'public');
-                $photoUrls[] = $path;
-            }
-            $reviewData['photo_urls'] = $photoUrls;
         }
 
-        $review->update($reviewData);
-
-        // Clear cache
-        Cache::forget("book_reviews_{$review->book_id}");
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'message' => 'Review updated successfully',
-                'review' => $review
-            ]);
+        $photoUrls = [];
+        foreach ($request->file('photos') as $photo) {
+            $photoUrls[] = $photo->store('review-photos', 'public');
         }
-
-        return redirect()->route('reviews.show', $review)
-                         ->with('success', 'Your review has been updated!');
+        $reviewData['photo_urls'] = $photoUrls;
     }
 
+    // ✅ Reanalyze sentiment on update
+    $hf = new HuggingFaceSentimentService();
+    $reviewData['sentiment'] = $hf->analyze($reviewData['review_text'] ?? '');
+
+    $review->update($reviewData);
+    Cache::forget("book_reviews_{$review->book_id}");
+
+    return redirect()->route('reviews.show', $review)
+        ->with('success', 'Your review has been updated!');
+}
     /**
      * Remove the specified review
      */
@@ -274,4 +271,5 @@ public function create($bookId)
 
         return view('frontoffice.reviews.my-reviews', compact('reviews'));
     }
+
 }

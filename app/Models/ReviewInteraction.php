@@ -30,10 +30,12 @@ class ReviewInteraction extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relationships
+   // Relationships
     public function review(): BelongsTo
     {
-        return $this->belongsTo(Review::class, 'review_id', 'review_id');
+        // Use the Review model's primary key dynamically (supports `id` or `review_id`)
+        $ownerKey = (new Review())->getKeyName();
+        return $this->belongsTo(Review::class, 'review_id', $ownerKey);
     }
 
     public function user(): BelongsTo

@@ -33,7 +33,7 @@
             <div class="flex items-start justify-between mb-6">
                 <div class="flex items-start space-x-4">
                     <div class="flex-shrink-0">
-                        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-black font-bold text-xl">
                             {{ substr($review->user->name, 0, 1) }}
                         </div>
                     </div>
@@ -190,7 +190,7 @@
     <div class="max-w-4xl max-h-full p-4">
         <img id="modalImage" src="" class="max-w-full max-h-full object-contain">
         <button onclick="closeImageModal()" 
-                class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300">&times;</button>
+                class="absolute top-4 right-4 text-black text-3xl hover:text-gray-300">&times;</button>
     </div>
 </div>
 

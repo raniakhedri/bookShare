@@ -1,11 +1,12 @@
 <!-- Review Discussions Partial -->
+ <meta name="csrf-token" content="{{ csrf_token() }}"> 
 @if($discussions && $discussions->count() > 0)
     <div class="space-y-4">
         @foreach($discussions as $discussion)
             <div class="border-l-2 border-gray-200 pl-4">
                 <!-- Discussion Header -->
                 <div class="flex items-center space-x-3 mb-2">
-                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-black font-bold text-sm">
                         {{ substr($discussion->user->name, 0, 1) }}
                     </div>
                     <div>
@@ -39,7 +40,7 @@
                                       required></textarea>
                             <div class="flex items-center space-x-2 mt-2">
                                 <button type="submit" 
-                                        class="px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700">
+                                        class="px-3 py-1 bg-blue-600 text-black text-xs rounded-md hover:bg-blue-700">
                                     Reply
                                 </button>
                                 <button type="button" 
@@ -58,7 +59,7 @@
                         @foreach($discussion->childInteractions as $reply)
                             <div class="border-l border-gray-100 pl-3">
                                 <div class="flex items-center space-x-2 mb-1">
-                                    <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-black font-bold text-xs">
                                         {{ substr($reply->user->name, 0, 1) }}
                                     </div>
                                     <span class="font-medium text-gray-900 text-xs">{{ $reply->user->name }}</span>
@@ -201,7 +202,7 @@ async function refreshDiscussions(reviewId) {
 function showNotification(message, type = 'info') {
     // Create and show notification
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg text-black z-50 ${
         type === 'success' ? 'bg-green-600' :
         type === 'error' ? 'bg-red-600' :
         type === 'warning' ? 'bg-yellow-600' :

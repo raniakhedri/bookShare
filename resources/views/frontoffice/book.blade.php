@@ -356,6 +356,17 @@
                     </div>
                 </div>
 
+            <!-- Recommendation Button -->
+            <div class="flex justify-end mb-8">
+                <a href="{{ route('books.recommendations') }}"
+                   class="group inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#f53003] to-red-600 hover:from-red-600 hover:to-[#f53003] text-white font-bold rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                    Get Book Recommendations
+                </a>
+            </div>
+
                 <!-- Grille de livres modernisée -->
                 <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 transition-all duration-500">
                     @foreach($books as $book)

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Favorite;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Services\BookRecommendationService;
 
 class BookController extends Controller
 {
@@ -128,5 +129,13 @@ class BookController extends Controller
             'message' => 'Book removed from favorites',
             'count' => auth()->user()->favorites()->count()
         ]);
+    }
+    /**
+    * Show AI-powered book recommendations for the current user.
+    */
+    public function recommendations(BookRecommendationService $service)
+    {
+        $books = $service->recommend(5);
+        return view('frontoffice.books.recommendations', compact('books'));
     }
 }

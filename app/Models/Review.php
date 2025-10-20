@@ -18,7 +18,7 @@ class Review extends Model
     protected $fillable = [
         'user_id', 'book_id', 'overall_rating', 'content_rating', 
         'condition_rating', 'recommendation_level', 'difficulty_level',
-        'review_title', 'review_text', 'reading_context', 'is_spoiler',
+        'review_title', 'review_text', 'reading_context', 'sentiment', 'is_spoiler',
         'content_warnings', 'photo_urls'
     ];
 
@@ -66,6 +66,12 @@ class Review extends Model
     public function votes(): HasMany
     {
         return $this->interactions()->whereIn('interaction_type', ['helpful_vote', 'unhelpful_vote']);
+    }
+
+    // Support implicit route model binding when primary key is not `id`
+    public function getRouteKeyName(): string
+    {
+        return $this->getKeyName();
     }
 
     // Scopes

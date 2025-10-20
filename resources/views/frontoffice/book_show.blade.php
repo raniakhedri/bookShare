@@ -339,118 +339,199 @@
         @include('components.ai-recommendations-widget', ['showAiRecommendations' => true])
 
 <!-- Reviews Section - Add this to your book_show.blade.php -->
+        <!-- Reviews Section - Enhanced -->
 <div class="mt-12">
-    <div class="border-t border-gray-200 pt-8">
-        <div class="flex items-center justify-between mb-6">
+    <div class="bg-white dark:bg-[#161615] rounded-2xl shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] p-8 transition-all duration-500">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <div>
-                <h3 class="text-2xl font-bold text-gray-900">Reviews</h3>
+                <h3 class="text-3xl font-bold text-[#1b1b18] dark:text-[#EDEDEC] flex items-center gap-3 mb-3">
+                    <span class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    </span>
+                    Customer Reviews
+                </h3>
                 @php
                     $avgRating = $book->reviews()->active()->avg('overall_rating') ?? 0;
                     $reviewCount = $book->reviews()->active()->count();
                 @endphp
                 @if($reviewCount > 0)
-                    <div class="flex items-center mt-2">
-                        @for($i = 1; $i <= 5; $i++)
-                            <svg class="w-5 h-5 {{ $i <= $avgRating ? 'text-yellow-400' : 'text-gray-300' }}" 
-                                 fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                            </svg>
-                        @endfor
-                        <span class="ml-2 text-gray-600">{{ number_format($avgRating, 1) }} ({{ $reviewCount }} {{ Str::plural('review', $reviewCount) }})</span>
+                    <div class="flex items-center gap-3 mt-2">
+                        <div class="flex items-center bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 px-4 py-2 rounded-xl border border-yellow-200 dark:border-yellow-800">
+                            @for($i = 1; $i <= 5; $i++)
+                                <svg class="w-6 h-6 {{ $i <= $avgRating ? 'text-yellow-400' : 'text-gray-300' }} drop-shadow-sm" 
+                                     fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                            @endfor
+                        </div>
+                        <div>
+                            <span class="text-2xl font-bold text-[#1b1b18] dark:text-[#EDEDEC]">{{ number_format($avgRating, 1) }}</span>
+                            <span class="text-sm text-[#706f6c] dark:text-[#A1A09A] ml-1">out of 5</span>
+                        </div>
+                        <span class="px-3 py-1 bg-[#FDFDFC] dark:bg-[#0a0a0a] border border-[#e3e3e0] dark:border-[#3E3E3A] rounded-full text-sm font-medium text-[#706f6c] dark:text-[#A1A09A]">
+                            {{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}
+                        </span>
                     </div>
                 @else
-                    <p class="text-gray-600 mt-2">No reviews yet</p>
+                    <p class="text-[#706f6c] dark:text-[#A1A09A] mt-2 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        No reviews yet - be the first!
+                    </p>
                 @endif
             </div>
 
             @auth
                 <a href="{{ route('reviews.create', $book->id) }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-black font-medium py-2 px-4 rounded-lg transition duration-200">
-                    Write Review
+                   class="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#f53003] to-[#ff6b47] dark:from-[#FF4433] dark:to-[#ff7766] text-black rounded-xl font-semibold hover:from-[#d42802] hover:to-[#f53003] dark:hover:from-[#dd3322] dark:hover:to-[#FF4433] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 group">
+                    <svg class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                    </svg>
+                    Write a Review
                 </a>
             @else
                 <a href="{{ route('login') }}" 
-                   class="bg-gray-600 hover:bg-gray-700 text-black font-medium py-2 px-4 rounded-lg transition duration-200">
+                   class="inline-flex items-center gap-3 px-6 py-3 bg-[#FDFDFC] dark:bg-[#0a0a0a] border-2 border-[#e3e3e0] dark:border-[#3E3E3A] text-[#1b1b18] dark:text-[#EDEDEC] rounded-xl font-semibold hover:border-[#f53003] dark:hover:border-[#FF4433] hover:text-[#f53003] dark:hover:text-[#FF4433] transition-all duration-300 group">
+                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                    </svg>
                     Login to Review
                 </a>
             @endauth
         </div>
 
         @if($reviewCount > 0)
-            <!-- Review Summary Stats -->
-            <div class="bg-gray-50 rounded-lg p-6 mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Rating Breakdown -->
-                    <div>
-                        <h4 class="font-semibold text-gray-900 mb-3">Rating Breakdown</h4>
+            <!-- Review Summary Stats - Enhanced -->
+            <div class="bg-gradient-to-br from-[#FDFDFC] to-[#fff2f2] dark:from-[#0a0a0a] dark:to-[#1D0002] rounded-2xl border border-[#e3e3e0] dark:border-[#3E3E3A] p-8 mb-8 shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Rating Breakdown - Enhanced -->
+                    <div class="bg-white dark:bg-[#161615] rounded-xl p-6 border border-[#e3e3e0] dark:border-[#3E3E3A] shadow-sm">
+                        <h4 class="font-bold text-[#1b1b18] dark:text-[#EDEDEC] mb-4 flex items-center gap-2 text-lg">
+                            <span class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow">
+                                <svg class="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </span>
+                            Rating Breakdown
+                        </h4>
                         @for($rating = 5; $rating >= 1; $rating--)
                             @php
                                 $ratingCount = $book->reviews()->where('overall_rating', $rating)->count();
                                 $percentage = $reviewCount > 0 ? ($ratingCount / $reviewCount) * 100 : 0;
                             @endphp
-                            <div class="flex items-center mb-2">
-                                <span class="text-sm text-gray-600 w-8">{{ $rating }}</span>
-                                <svg class="w-4 h-4 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <div class="flex items-center mb-3 group">
+                                <span class="text-sm font-semibold text-[#706f6c] dark:text-[#A1A09A] w-8">{{ $rating }}</span>
+                                <svg class="w-4 h-4 text-yellow-400 mr-2 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                 </svg>
-                                <div class="flex-1 bg-gray-200 rounded-full h-2 mr-3">
-                                    <div class="bg-yellow-400 h-2 rounded-full" style="width: {{ $percentage }}%"></div>
+                                <div class="flex-1 bg-[#e3e3e0] dark:bg-[#3E3E3A] rounded-full h-2.5 mr-3 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 h-2.5 rounded-full transition-all duration-500 ease-out" style="width: {{ $percentage }}%"></div>
                                 </div>
-                                <span class="text-sm text-gray-600 w-8">{{ $ratingCount }}</span>
+                                <span class="text-sm font-bold text-[#1b1b18] dark:text-[#EDEDEC] w-10 text-right">{{ $ratingCount }}</span>
                             </div>
                         @endfor
                     </div>
 
-                    <!-- Additional Stats -->
-                    <div>
-                        <h4 class="font-semibold text-gray-900 mb-3">Review Stats</h4>
-                        <div class="space-y-2 text-sm">
+                    <!-- Additional Stats - Enhanced -->
+                    <div class="bg-white dark:bg-[#161615] rounded-xl p-6 border border-[#e3e3e0] dark:border-[#3E3E3A] shadow-sm">
+                        <h4 class="font-bold text-[#1b1b18] dark:text-[#EDEDEC] mb-4 flex items-center gap-2 text-lg">
+                            <span class="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow">
+                                <svg class="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                            Review Stats
+                        </h4>
+                        <div class="space-y-3 text-sm">
                             @php
                                 $avgContent = $book->reviews()->whereNotNull('content_rating')->avg('content_rating');
                                 $avgCondition = $book->reviews()->whereNotNull('condition_rating')->avg('condition_rating');
                                 $recommendationRate = $book->reviews()->where('recommendation_level', '>=', 4)->count() / max($reviewCount, 1) * 100;
+                                $positiveCount = $book->reviews()->where('sentiment', 'positive')->count();
+                                $neutralCount = $book->reviews()->where('sentiment', 'neutral')->count();
+                                $negativeCount = $book->reviews()->where('sentiment', 'negative')->count();
                             @endphp
                             @if($avgContent)
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Avg Content Rating:</span>
-                                    <span class="font-medium">{{ number_format($avgContent, 1) }}/5</span>
+                                <div class="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                    <span class="text-[#706f6c] dark:text-[#A1A09A] flex items-center gap-2">
+                                        📚 Avg Content Rating:
+                                    </span>
+                                    <span class="font-bold text-[#1b1b18] dark:text-[#EDEDEC] text-lg">{{ number_format($avgContent, 1) }}<span class="text-sm">/5</span></span>
                                 </div>
                             @endif
                             @if($avgCondition)
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Avg Condition:</span>
-                                    <span class="font-medium">{{ number_format($avgCondition, 1) }}/5</span>
+                                <div class="flex justify-between items-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                                    <span class="text-[#706f6c] dark:text-[#A1A09A] flex items-center gap-2">
+                                        📖 Avg Condition:
+                                    </span>
+                                    <span class="font-bold text-[#1b1b18] dark:text-[#EDEDEC] text-lg">{{ number_format($avgCondition, 1) }}<span class="text-sm">/5</span></span>
                                 </div>
                             @endif
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Would Recommend:</span>
-                                <span class="font-medium">{{ number_format($recommendationRate, 0) }}%</span>
+                            <div class="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                <span class="text-[#706f6c] dark:text-[#A1A09A] flex items-center gap-2">
+                                    👍 Would Recommend:
+                                </span>
+                                <span class="font-bold text-green-600 dark:text-green-400 text-lg">{{ number_format($recommendationRate, 0) }}%</span>
+                            </div>
+                                                        <!-- Sentiment Counters -->
+                            <div class="flex justify-between items-center p-3 bg-gradient-to-r from-green-50 via-gray-50 to-red-50 dark:from-green-900/20 dark:via-gray-900/20 dark:to-red-900/20 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] mt-2">
+                                <span class="flex items-center gap-2">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 font-semibold text-xs mr-2">
+                                        😊 Positive: {{ $positiveCount }}
+                                    </span>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800 font-semibold text-xs mr-2">
+                                        😐 Neutral: {{ $neutralCount }}
+                                    </span>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-800 font-semibold text-xs">
+                                        😞 Negative: {{ $negativeCount }}
+                                    </span>
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Most Helpful Review Preview -->
+                    <!-- Most Helpful Review Preview - Enhanced -->
                     @php
-                        $topReview = $book->reviews()->with('user')->active()->orderByDesc('helpful_votes')->first();
+                        $topReview = $book->reviews()->active()->orderByDesc('helpful_votes')->first();
                     @endphp
                     @if($topReview)
-                        <div>
-                            <h4 class="font-semibold text-gray-900 mb-3">Most Helpful Review</h4>
-                            <div class="bg-white p-4 rounded-lg border">
-                                <div class="flex items-center mb-2">
-                                    @for($i = 1; $i <= 5; $i++)
-                                        <svg class="w-4 h-4 {{ $i <= $topReview->overall_rating ? 'text-yellow-400' : 'text-gray-300' }}" 
-                                             fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                        </svg>
-                                    @endfor
-                                    <span class="ml-2 text-sm text-gray-600">by {{ $topReview->user?->name ?? 'Anonymous' }}</span>
+                        <div class="bg-white dark:bg-[#161615] rounded-xl p-6 border border-[#e3e3e0] dark:border-[#3E3E3A] shadow-sm">
+                            <h4 class="font-bold text-[#1b1b18] dark:text-[#EDEDEC] mb-4 flex items-center gap-2 text-lg">
+                                <span class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow">
+                                    <svg class="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                </span>
+                                Most Helpful Review
+                            </h4>
+                            <div class="bg-gradient-to-br from-[#FDFDFC] to-[#fff2f2] dark:from-[#0a0a0a] dark:to-[#1D0002] p-5 rounded-xl border border-[#e3e3e0] dark:border-[#3E3E3A] hover:shadow-md transition-all duration-300">
+                                <div class="flex items-center mb-3">
+                                    <div class="flex items-center bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 px-3 py-1.5 rounded-lg border border-yellow-200 dark:border-yellow-800 mr-3">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <svg class="w-4 h-4 {{ $i <= $topReview->overall_rating ? 'text-yellow-400' : 'text-gray-300' }}" 
+                                                 fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                            </svg>
+                                        @endfor
+                                    </div>
+                                    <span class="text-sm font-semibold text-[#706f6c] dark:text-[#A1A09A]">by {{ $topReview->user->name }}</span>
                                 </div>
-                                <p class="text-sm text-gray-700 line-clamp-3">
+                                <p class="text-sm text-[#1b1b18] dark:text-[#EDEDEC] leading-relaxed line-clamp-3 mb-3">
                                     {{ Str::limit($topReview->review_text, 150) }}
                                 </p>
-                                <div class="mt-2 text-xs text-gray-500">
-                                    {{ $topReview->helpful_votes }} found helpful
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full font-semibold flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
+                                        </svg>
+                                        {{ $topReview->helpful_votes }} found helpful
+                                    </span>
+                                    <a href="{{ route('reviews.show', $topReview) }}" class="text-[#f53003] dark:text-[#FF4433] hover:underline font-medium">
+                                        Read full review →
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -458,13 +539,23 @@
                 </div>
             </div>
 
-            <!-- Recent Reviews -->
+            <!-- Recent Reviews - Enhanced -->
             <div class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <h4 class="text-lg font-semibold text-gray-900">Recent Reviews</h4>
+                <div class="flex items-center justify-between bg-gradient-to-r from-[#FDFDFC] to-white dark:from-[#0a0a0a] dark:to-[#161615] p-6 rounded-2xl border border-[#e3e3e0] dark:border-[#3E3E3A] shadow-sm">
+                    <h4 class="text-xl font-bold text-[#1b1b18] dark:text-[#EDEDEC] flex items-center gap-3">
+                        <span class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+                            <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                            </svg>
+                        </span>
+                        Recent Reviews
+                    </h4>
                     <a href="{{ route('reviews.index', $book->id) }}" 
-                       class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                       class="group px-5 py-2.5 bg-gradient-to-r from-[#f53003] to-red-600 hover:from-red-600 hover:to-[#f53003] text-black rounded-xl font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2">
                         View All Reviews
+                        <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </a>
                 </div>
 
@@ -484,9 +575,9 @@
                 @if($reviewCount > 3)
                     <div class="text-center pt-6">
                         <a href="{{ route('reviews.index', $book->id) }}" 
-                           class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                           class="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#f53003] to-red-600 hover:from-red-600 hover:to-[#f53003] shadow-lg hover:shadow-xl text-black font-bold rounded-2xl transform hover:-translate-y-1 transition-all duration-300">
                             View All {{ $reviewCount }} Reviews
-                            <svg class="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="ml-3 w-5 h-5 transform group-hover:translate-x-2 transition-transform" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
                             </svg>
                         </a>
@@ -494,22 +585,41 @@
                 @endif
             </div>
         @else
-            <!-- No Reviews State -->
-            <div class="text-center py-12">
-                <div class="text-gray-400 text-6xl mb-4">📝</div>
-                <h4 class="text-xl font-semibold text-gray-600 mb-2">No reviews yet</h4>
-                <p class="text-gray-500 mb-6">Be the first to share your thoughts about this book!</p>
-                @auth
-                    <a href="{{ route('reviews.create', $book->id) }}" 
-                       class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-black bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Write the First Review
-                    </a>
-                @else
-                    <p class="text-gray-500">
-                        <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 font-medium">Login</a> 
-                        to write the first review
-                    </p>
-                @endauth
+            <!-- No Reviews State - Enhanced -->
+            <div class="bg-gradient-to-br from-[#FDFDFC] to-white dark:from-[#0a0a0a] dark:to-[#161615] rounded-2xl shadow-lg border border-[#e3e3e0] dark:border-[#3E3E3A] p-12 text-center">
+                <div class="max-w-md mx-auto">
+                    <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform">
+                        <svg class="w-12 h-12 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                        </svg>
+                    </div>
+                    <h4 class="text-2xl font-bold text-[#1b1b18] dark:text-[#EDEDEC] mb-3">No reviews yet</h4>
+                    <p class="text-[#706f6c] dark:text-[#A1A09A] mb-8 text-lg">Be the first to share your thoughts about this book!</p>
+                    @auth
+                        <a href="{{ route('reviews.create', $book->id) }}" 
+                           class="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#f53003] to-red-600 hover:from-red-600 hover:to-[#f53003] text-black font-bold rounded-2xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Write the First Review
+                            <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </a>
+                    @else
+                        <div class="space-y-4">
+                            <p class="text-[#706f6c] dark:text-[#A1A09A]">
+                                Want to share your review? 
+                            </p>
+                            <a href="{{ route('login') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#f53003] to-red-600 hover:from-red-600 hover:to-[#f53003] text-black font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                                </svg>
+                                Login to Write a Review
+                            </a>
+                        </div>
+                    @endauth
+                </div>
             </div>
         @endif
     </div>

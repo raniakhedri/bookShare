@@ -221,6 +221,9 @@ Route::middleware('auth')->prefix('marketplace')->name('marketplace.')->group(fu
 
 // Livres
 Route::get('/books', [BookController::class, 'index'])->name('books.index');
+// AI Book Recommendations
+Route::get('/books/recommendations', [\App\Http\Controllers\Frontoffice\BookController::class, 'recommendations'])->name('books.recommendations');
+Route::get('/books/{book}/add-to-journal', [BookController::class, 'addToJournalForm'])->name('books.add-to-journal');
 Route::get('/books/{book}/add-to-journal', [BookController::class, 'addToJournalForm'])->name('books.add-to-journal');
 Route::post('/books/{book}/store-in-journal', [BookController::class, 'storeInJournal'])->name('books.store-in-journal');
 Route::get('/journals/{journal}/books/{book}', [BookController::class, 'show'])->name('books.show');
@@ -299,6 +302,7 @@ Route::delete('/comments/{comment}', [CommentJournalController::class, 'destroy'
 
 // Reviews Routes
 use App\Http\Controllers\Frontoffice\ReviewController;
+use App\Http\Controllers\Frontoffice\ReviewInteractionController;
 Route::resource('reviews', ReviewController::class);
 Route::get('/books/{book}/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
 Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
@@ -558,24 +562,24 @@ Route::get('/reviews/{review}/vote-stats', [ReviewInteractionController::class, 
 
 // Protected routes - Require authentication
 Route::middleware('auth')->group(function () {
-	// Review management
-	Route::get('/books/{book}/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
-	Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
-	Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
-	Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
-	Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
-	Route::get('/my-reviews', [ReviewController::class, 'myReviews'])->name('reviews.my-reviews');
-
-	// Interaction management - GET routes first
-	Route::get('/reviews/{review}/discussions', [ReviewInteractionController::class, 'discussions'])->name('interactions.discussions');
-	Route::get('/my-interactions', [ReviewInteractionController::class, 'myInteractions'])->name('interactions.my-interactions');
-	Route::get('/my-bookmarks', [ReviewInteractionController::class, 'bookmarks'])->name('interactions.bookmarks');
-
-	// Interaction CRUD - POST/PUT/DELETE routes
-	Route::post('/reviews/{review}/interactions', [ReviewInteractionController::class, 'store'])->name('interactions.store');
-	Route::put('/interactions/{interaction}', [ReviewInteractionController::class, 'update'])->name('interactions.update');
-	Route::delete('/interactions/{interaction}', [ReviewInteractionController::class, 'destroy'])->name('interactions.destroy');
-	Route::post('/interactions/{interaction}/report', [ReviewInteractionController::class, 'report'])->name('interactions.report');
+    // Review management
+    Route::get('/books/{book}/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
+    Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
+    Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::get('/my-reviews', [ReviewController::class, 'myReviews'])->name('reviews.my-reviews');
+    
+    // Interaction management - GET routes first
+    Route::get('/reviews/{review}/discussions', [ReviewInteractionController::class, 'discussions'])->name('interactions.discussions');
+    Route::get('/my-interactions', [ReviewInteractionController::class, 'myInteractions'])->name('interactions.my-interactions');
+    Route::get('/my-bookmarks', [ReviewInteractionController::class, 'bookmarks'])->name('interactions.bookmarks');
+    
+    // Interaction CRUD - POST/PUT/DELETE routes
+    Route::post('/reviews/{review}/interactions', [ReviewInteractionController::class, 'store'])->name('interactions.store');
+    Route::put('/interactions/{interaction}', [ReviewInteractionController::class, 'update'])->name('interactions.update');
+    Route::delete('/interactions/{interaction}', [ReviewInteractionController::class, 'destroy'])->name('interactions.destroy');
+    Route::post('/interactions/{interaction}/report', [ReviewInteractionController::class, 'report'])->name('interactions.report');
 // AI Recommendations routes
     Route::get('/ai/recommendations', [App\Http\Controllers\AIRecommendationController::class, 'showRecommendationsPage'])->name('ai.recommendations');
     Route::post('/ai/recommendations/refresh', function () {

@@ -1,48 +1,57 @@
-<div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition duration-200" data-review-id="{{ $review->review_id }}">
+<meta name="csrf-token" content="{{ csrf_token() }}"> 
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-blue-200 transition-all duration-300 transform hover:-translate-y-1" data-review-id="{{ $review->review_id }}">
     <!-- Review Header -->
     <div class="flex items-start justify-between mb-4">
         <div class="flex items-start space-x-4">
             <!-- User Avatar -->
             <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-black font-bold text-lg">
-                    {{ substr($review->user?->name ?? 'A', 0, 1) }}
+                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-black font-bold text-xl shadow-md ring-2 ring-white">
+                    {{ substr($review->user->name, 0, 1) }}
                 </div>
             </div>
             
             <!-- Review Info -->
             <div class="flex-1">
-                <div class="flex items-center space-x-2 mb-1">
-                    <h3 class="font-semibold text-gray-900">{{ $review->user?->name ?? 'Anonymous' }}</h3>
-                    <span class="text-gray-400">•</span>
-                    <time class="text-sm text-gray-500" datetime="{{ $review->created_at->toISOString() }}">
-                        {{ $review->created_at->diffForHumans() }}
+                <div class="flex items-center flex-wrap gap-2 mb-2">
+                    <h3 class="font-bold text-gray-900 text-lg">{{ $review->user->name }}</h3>
+@if($review->sentiment)
+    <span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm animate-pulse
+        {{ $review->sentiment == 'positive' ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-black' : ($review->sentiment == 'negative' ? 'bg-gradient-to-r from-red-400 to-rose-500 text-black' : 'bg-gradient-to-r from-gray-400 to-slate-500 text-black') }}">
+        ✨ {{ ucfirst($review->sentiment) }}
+    </span>
+@endif
+
+
+                    <span class="text-gray-400 font-bold">•</span>
+                    <time class="text-sm text-gray-600 font-medium" datetime="{{ $review->created_at->toISOString() }}">
+                        ⏰ {{ $review->created_at->diffForHumans() }}
                     </time>
                     @if($review->updated_at->ne($review->created_at))
-                        <span class="text-xs text-gray-400">(edited)</span>
+                        <span class="text-xs text-gray-500 italic">(edited)</span>
                     @endif
                 </div>
                 
                 <!-- Rating Display -->
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-4 mt-3">
                     <!-- Overall Rating -->
-                    <div class="flex items-center">
+                    <div class="flex items-center bg-gradient-to-r from-yellow-50 to-amber-50 px-3 py-1.5 rounded-lg border border-yellow-200">
                         @for($i = 1; $i <= 5; $i++)
-                            <svg class="w-4 h-4 {{ $i <= $review->overall_rating ? 'text-yellow-400' : 'text-gray-300' }}" 
+                            <svg class="w-5 h-5 {{ $i <= $review->overall_rating ? 'text-yellow-400' : 'text-gray-300' }} drop-shadow-sm" 
                                  fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                             </svg>
                         @endfor
-                        <span class="ml-1 text-sm font-medium text-gray-700">{{ $review->overall_rating }}/5</span>
+                        <span class="ml-2 text-sm font-bold text-gray-800">{{ $review->overall_rating }}/5</span>
                     </div>
                     
                     <!-- Additional Ratings (if provided) -->
                     @if($review->content_rating || $review->condition_rating)
-                        <div class="flex items-center space-x-3 text-xs text-gray-600">
+                        <div class="flex items-center space-x-3 text-sm font-medium">
                             @if($review->content_rating)
-                                <span>Content: {{ $review->content_rating }}/5</span>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md">📚 Content: {{ $review->content_rating }}/5</span>
                             @endif
                             @if($review->condition_rating)
-                                <span>Condition: {{ $review->condition_rating }}/5</span>
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-md">📖 Condition: {{ $review->condition_rating }}/5</span>
                             @endif
                         </div>
                     @endif
@@ -85,46 +94,49 @@
     
     <!-- Review Title -->
     @if($review->review_title)
-        <h4 class="text-lg font-semibold text-gray-900 mb-3">{{ $review->review_title }}</h4>
+        <h4 class="text-xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{{ $review->review_title }}</h4>
     @endif
     
     <!-- Spoiler Warning -->
     @if($review->is_spoiler)
-        <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div class="mb-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-500 rounded-lg shadow-sm">
             <div class="flex items-center">
-                <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-6 h-6 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                 </svg>
-                <span class="text-yellow-800 font-medium">Spoiler Warning</span>
+                <span class="text-yellow-900 font-bold">⚠️ Spoiler Alert!</span>
             </div>
             @if($review->content_warnings)
-                <p class="text-yellow-700 text-sm mt-1">{{ $review->content_warnings }}</p>
+                <p class="text-yellow-800 text-sm mt-2 font-medium">{{ $review->content_warnings }}</p>
             @endif
         </div>
     @endif
     
     <!-- Review Content -->
-    <div class="prose prose-sm max-w-none mb-4">
-        <div class="text-gray-700 leading-relaxed">
+    <div class="prose prose-sm max-w-none mb-5">
+        <div class="text-gray-700 leading-relaxed text-base bg-gray-50 p-4 rounded-lg border-l-4 border-blue-400">
             {{ $review->review_text }}
         </div>
     </div>
     
     <!-- Reading Context -->
     @if($review->reading_context)
-        <div class="mb-4 text-sm text-gray-600">
-            <span class="font-medium">Context:</span> {{ $review->reading_context }}
+        <div class="mb-4 text-sm">
+            <span class="inline-flex items-center px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full font-medium">
+                📍 Context: {{ $review->reading_context }}
+            </span>
         </div>
     @endif
     
     <!-- Photos -->
     @if($review->photo_urls && count($review->photo_urls) > 0)
-        <div class="mb-4">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div class="mb-5">
+            <h5 class="text-sm font-semibold text-gray-700 mb-2">📸 Review Photos</h5>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 @foreach($review->photo_urls as $photo)
                     <img src="{{ asset('storage/' . $photo) }}" 
                          alt="Review photo" 
-                         class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-75"
+                         class="w-full h-28 object-cover rounded-lg cursor-pointer hover:opacity-90 hover:scale-105 transition-all duration-200 shadow-md border-2 border-gray-200"
                          onclick="openImageModal('{{ asset('storage/' . $photo) }}')">
                 @endforeach
             </div>
@@ -132,13 +144,17 @@
     @endif
     
     <!-- Interaction Buttons -->
-    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+    <div class="flex items-center justify-between pt-5 border-t-2 border-gray-100">
         <div class="flex items-center space-x-6">
             @include('frontoffice.reviews.partials.interaction-buttons', ['review' => $review])
         </div>
         
         <!-- View Count -->
-        <div class="text-sm text-gray-500">
+        <div class="text-sm text-gray-500 flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+            </svg>
             {{ $review->view_count }} {{ Str::plural('view', $review->view_count) }}
         </div>
     </div>
@@ -193,7 +209,7 @@ function renderDiscussions(discussions) {
                 <p class="text-sm text-gray-700">${discussion.content}</p>
             </div>
         `;
-    });
+    }); 
     html += '</div>';
     return html;
 }

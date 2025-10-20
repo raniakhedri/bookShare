@@ -8,6 +8,8 @@ use App\Http\Controllers\ExchangeRequestController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\BookAvailabilityController;
+use App\Http\Controllers\Frontoffice\ReviewController;
+use App\Http\Controllers\Frontoffice\ReviewInteractionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,7 +74,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('reviews', ReviewController::class);
     Route::get('books/{book}/reviews', [ReviewController::class, 'bookReviews']);
     Route::get('my-reviews', [ReviewController::class, 'myReviews']);
-
+    
     // Interaction API routes
     Route::post('reviews/{review}/interactions', [ReviewInteractionController::class, 'store']);
     Route::put('interactions/{interaction}', [ReviewInteractionController::class, 'update']);

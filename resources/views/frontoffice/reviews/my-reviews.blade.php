@@ -1,4 +1,4 @@
-@extends('frontoffice.  layouts.app')
+@extends('frontoffice.layouts.app')
 
 @section('title', 'My Reviews')
 
@@ -152,7 +152,7 @@
                 <h3 class="text-xl font-semibold text-gray-600 mb-2">No reviews yet</h3>
                 <p class="text-gray-500 mb-6">You haven't written any book reviews yet.</p>
                 <a href="{{ route('books.index') }}" 
-                   class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                   class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-black bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Browse Books to Review
                 </a>
             </div>

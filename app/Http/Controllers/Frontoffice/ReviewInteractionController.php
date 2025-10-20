@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-
 class ReviewInteractionController extends Controller
 {
     public function __construct()
@@ -21,66 +20,47 @@ class ReviewInteractionController extends Controller
     /**
      * Store a new interaction (vote, reply, report, etc.)
      */
-    public function store(StoreInteractionRequest $request, Review $review)
+   public function store(Request $request, Review $review)
     {
-        $interactionType = $request->validated()['interaction_type'];
-        
-        // Prevent users from interacting with their own reviews (except bookmarks)
-        if ($review->user_id === Auth::id() && !in_array($interactionType, ['bookmark'])) {
-            return response()->json([
-                'error' => 'You cannot interact with your own review'
-            ], 403);
-        }
+        $validatedData = $request->validate([
+            'interaction_type' => 'required|in:reply,helpful_vote,unhelpful_vote,report,share,bookmark',
+            'content' => 'nullable|string|max:2000',
+            'parent_interaction_id' => 'nullable|integer|exists:review_interactions,interaction_id',
+        ]);
 
-        // Check for existing votes to prevent duplicates
-        if (in_array($interactionType, ['helpful_vote', 'unhelpful_vote'])) {
+        // Prevent duplicate votes
+        if (in_array($validatedData['interaction_type'], ['helpful_vote', 'unhelpful_vote'])) {
             $existingVote = ReviewInteraction::where('review_id', $review->review_id)
                                            ->where('user_id', Auth::id())
                                            ->whereIn('interaction_type', ['helpful_vote', 'unhelpful_vote'])
                                            ->first();
 
             if ($existingVote) {
-                // If same vote type, remove it (toggle)
-                if ($existingVote->interaction_type === $interactionType) {
+                if ($existingVote->interaction_type === $validatedData['interaction_type']) {
                     $existingVote->delete();
-                    return response()->json([
-                        'message' => 'Vote removed',
-                        'action' => 'removed'
-                    ]);
+                    return response()->json(['message' => 'Vote removed', 'action' => 'removed']);
                 } else {
-                    // If different vote type, update it
-                    $existingVote->update(['interaction_type' => $interactionType]);
-                    return response()->json([
-                        'message' => 'Vote updated',
-                        'action' => 'updated'
-                    ]);
+                    $existingVote->update(['interaction_type' => $validatedData['interaction_type']]);
+                    return response()->json(['message' => 'Vote updated', 'action' => 'updated']);
                 }
             }
         }
 
-        // Create the interaction
-        $interactionData = $request->validated();
-        $interactionData['user_id'] = Auth::id();
-        $interactionData['review_id'] = $review->review_id;
-
-        // Calculate interaction depth for threaded replies
-        if ($interactionData['parent_interaction_id']) {
-            $parentInteraction = ReviewInteraction::find($interactionData['parent_interaction_id']);
-            $interactionData['interaction_depth'] = $parentInteraction ? $parentInteraction->interaction_depth + 1 : 0;
-        }
-
-        $interaction = ReviewInteraction::create($interactionData);
-
-        // Load the interaction with user data
-        $interaction->load('user:id,name');
+        $interaction = ReviewInteraction::create([
+            // Use dynamic key to support projects where Review PK is `id` or `review_id`
+            'review_id' => $review->getKey(),
+            'user_id' => Auth::id(),
+            'interaction_type' => $validatedData['interaction_type'],
+            'content' => $validatedData['content'] ?? null,
+'parent_interaction_id' => $validatedData['parent_interaction_id'] ?? null,
+        ]);
 
         return response()->json([
             'message' => 'Interaction added successfully',
-            'interaction' => $interaction,
+            'interaction' => $interaction->load('user:id,name'),
             'action' => 'created'
-        ], 201);
+        ]);
     }
-
     /**
      * Update an interaction (mainly for editing replies)
      */

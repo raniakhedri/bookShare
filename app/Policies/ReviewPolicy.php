@@ -9,58 +9,45 @@ use App\Models\User;
 class ReviewPolicy
 {
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return true; // Anyone can view reviews
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Review $review): bool
-    {
-        return true; // Anyone can view a review
-    }
-
-    /**
-     * Determine whether the user can create models.
+     * Determine whether the user can create reviews.
      */
     public function create(User $user): bool
     {
-        return true; // Authenticated users can create reviews
+        // Any logged-in user can create a review
+        return $user !== null;
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Determine whether the user can update the review.
      */
     public function update(User $user, Review $review): bool
     {
-        return $user->id === $review->user_id || $user->isAdmin(); // Only the review owner or admin can update
+        // Only the author of the review can update it
+        return $user->id === $review->user_id;
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Determine whether the user can delete the review.
      */
     public function delete(User $user, Review $review): bool
     {
-        return $user->id === $review->user_id || $user->isAdmin(); // Only the review owner or admin can delete
+        // Only the author can delete, or add admin check if you want
+        return $user->id === $review->user_id || $user->role === 'admin';
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can restore the review.
      */
     public function restore(User $user, Review $review): bool
     {
-        return $user->isAdmin(); // Only admins can restore
+        return $user->role === 'admin';
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete the review.
      */
     public function forceDelete(User $user, Review $review): bool
     {
-        return $user->isAdmin(); // Only admins can force delete
+        return $user->role === 'admin';
     }
 }
