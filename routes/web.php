@@ -20,6 +20,11 @@ use App\Http\Controllers\Frontoffice\NoteController;
 use App\Http\Controllers\Frontoffice\CommentJournalController;
 use App\Http\Controllers\Frontoffice\QuizController;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Journal;
+use App\Models\User;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -251,7 +256,32 @@ Route::middleware(['auth'])->group(function () {
 // Génération du quiz (POST)
 Route::post('/journals/{id}/generate-quiz', [QuizController::class, 'generateQuiz'])->name('journals.generateQuiz');
 // Partage de journal
-Route::post('/journals/{journal}/share', [JournalController::class, 'share'])->name('journals.share');
+Route::post('/journals/{journal}/share', function (Request $request, $journalId) {
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+    ]);
+
+    $journal = Journal::findOrFail($journalId);
+    $userToShare = User::where('email', $request->email)->firstOrFail();
+
+    $webhookUrl = 'http://localhost:5678/webhook-test/share-journal';
+
+    $response = Http::post($webhookUrl, [
+        'journal_id'        => $journal->id,
+        'journal_name'      => $journal->name,
+        'shared_by_name'    => Auth::user()->name,
+        'shared_by_email'   => Auth::user()->email,
+        'recipient_name'    => $userToShare->name,
+        'recipient_email'   => $userToShare->email,
+        'journal_url'       => url('/journals/' . $journal->id),
+    ]);
+
+    if ($response->successful()) {
+        return back()->with('success', '✅ Workflow N8N exécuté avec succès.');
+    }
+
+    return back()->with('error', '❌ Erreur lors de l’appel du webhook.');
+})->name('journals.share');
 Route::delete('/journals/{journal}/unshare/{user}', [JournalController::class, 'unshare'])->name('journals.unshare');
 Route::delete('/journals/{journal}/leave', [JournalController::class, 'leave'])->name('journals.leave');
 // Notes et commentaires

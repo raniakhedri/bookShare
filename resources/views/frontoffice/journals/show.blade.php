@@ -66,11 +66,12 @@
                 @endif
 
                 <!-- Share -->
-                <a href="#" 
-                   class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-md border border-[#4f46e5] text-[#4f46e5] bg-white dark:bg-[#161615] hover:bg-[#4f46e5] hover:text-white hover:shadow-lg hover:-translate-y-0.5 transition duration-300"
-                   onclick="document.getElementById('share-modal').classList.remove('hidden')">
+                <button type="button" 
+                        class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-md border border-[#4f46e5] text-[#4f46e5] bg-white hover:bg-[#4f46e5] hover:text-white transition"
+                        onclick="document.getElementById('share-modal').classList.remove('hidden')">
                     <i class="bi bi-share"></i> Share Journal
-                </a>
+                </button>
+
 
                 <!-- Manage Quiz -->
                 @if($journal->user_id === auth()->id() && $journal->shares()->exists())
@@ -149,47 +150,46 @@
         </div>
     </div>
 </div>
-<!-- Share Modal -->
+<!-- 🔘 Modal Share -->
 <div id="share-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
     <div class="bg-white dark:bg-[#161615] rounded-xl p-6 max-w-md w-full mx-4 relative">
         <button onclick="document.getElementById('share-modal').classList.add('hidden')" 
-                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
             <i class="bi bi-x-lg"></i>
         </button>
         
-        <h3 class="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-4">Share Journal</h3>
+        <h3 class="text-xl font-semibold text-[#1b1b18] mb-4">Share Journal</h3>
         
         <form action="{{ route('journals.share', $journal->id) }}" method="POST">
             @csrf
             <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] mb-2">
+                <label for="email" class="block text-sm font-medium text-[#706f6c] mb-2">
                     Share with (email address)
                 </label>
                 <input type="email" name="email" id="email" required
-                       class="w-full px-4 py-2 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-[#1b1b18] dark:text-[#EDEDEC] focus:outline-none focus:ring-2 focus:ring-[#f53003] dark:focus:ring-[#FF4433]"
+                       class="w-full px-4 py-2 rounded-lg border border-[#e3e3e0] bg-white text-[#1b1b18] focus:outline-none focus:ring-2 focus:ring-[#f53003]"
                        placeholder="Enter email address">
             </div>
             
             <div class="flex justify-end gap-3">
                 <button type="button" 
                         onclick="document.getElementById('share-modal').classList.add('hidden')"
-                        class="px-4 py-2 text-sm font-medium rounded-md border border-[#e3e3e0] dark:border-[#3E3E3A] text-[#706f6c] dark:text-[#A1A09A] hover:bg-gray-50 dark:hover:bg-[#1D1D1B] transition">
+                        class="px-4 py-2 text-sm font-medium rounded-md border border-[#e3e3e0] text-[#706f6c] hover:bg-gray-50 transition">
                     Cancel
                 </button>
                 <button type="submit"
-                        class="px-4 py-2 text-sm font-medium rounded-md bg-[#f53003] dark:bg-[#FF4433] text-white hover:bg-[#d42a03] dark:hover:bg-[#e5391b] transition">
+                        class="px-4 py-2 text-sm font-medium rounded-md bg-[#f53003] text-white hover:bg-[#d42a03] transition">
                     Share
                 </button>
             </div>
         </form>
     </div>
 </div>
+
 <script>
     // Fermer le modal quand on clique en dehors
     document.addEventListener('click', function(event) {
         const modal = document.getElementById('share-modal');
-        const modalContent = modal.querySelector('div');
-        
         if (event.target === modal) {
             modal.classList.add('hidden');
         }
