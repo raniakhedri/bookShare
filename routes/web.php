@@ -9,6 +9,8 @@ use App\Http\Controllers\Web\MarketplaceController;
 use App\Http\Controllers\Web\MarketBookWebController;
 use App\Http\Controllers\Web\TransactionWebController;
 use App\Http\Controllers\Web\AdminMarketplaceController;
+use App\Http\Controllers\MetricsController;
+use App\Http\Controllers\HealthCheckController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Http\Request;
@@ -36,6 +38,12 @@ use App\Models\User;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+// Health Check Endpoint
+Route::get('/health', [HealthCheckController::class, 'check'])->name('health');
+
+// Prometheus Metrics Endpoint
+Route::get('/metrics', [MetricsController::class, 'export'])->name('metrics');
 
 // FRONTOFFICE ROUTES (BookShare - Public User Interface)
 Route::get('/', function () {

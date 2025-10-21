@@ -13,3 +13,7 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+
+# Monitoring data (don't commit docker volumes)
+/monitoring/grafana/data
+/monitoring/prometheus/data
